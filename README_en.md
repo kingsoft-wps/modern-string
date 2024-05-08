@@ -27,6 +27,11 @@ It should be noted that the wstring in this library is actually a UTF-16 encoded
 This is completely different from std:: wstring, so be sure to distinguish it when using it.
 
 
+## how to use
+
+Usually, reference modern-string as a static library, and #include <ks_string.h> in the source code file.
+
+
 ## about ks_basic_mutable_string
 
   1. The return-type of operator\[] and at methods are always const_reference.

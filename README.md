@@ -25,6 +25,11 @@ modern-string提供的核心字符串类是ks_basic_mutable_string和ks_basic_im
 要特别说明的是，此库中的wstring实为utf-16编码的字符串，即使在Linux下也是如此。这与std::wstring是完全不同的，使用时务必注意区分。
 
 
+## 如何使用
+
+通常，仅需以静态库的方式引用modern-string，并在源码文件中#include <ks_string.h>即可。
+
+
 ## ks_basic_mutable_string 介绍
 
 ks_basic_mutable_string与std::basic_string十分相似，关键区别在于：
