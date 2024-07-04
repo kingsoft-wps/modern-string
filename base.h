@@ -32,6 +32,13 @@ using WCHAR = std::conditional<sizeof(wchar_t) == 2, wchar_t, unsigned short>::t
 // #endif
 
 
+#ifndef _DEBUG
+#	if !defined(NDEBUG)
+#		define _DEBUG
+#	endif
+#endif
+
+
 #ifndef ASSERT
 #	ifdef _DEBUG
 #		if defined(_MSC_VER)
