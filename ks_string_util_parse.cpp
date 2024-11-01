@@ -164,7 +164,7 @@ namespace ks_string_util {
 		if (str_view2.empty()) 
 			return def_value;
 
-		const WCHAR first_wch = str_view2[0];
+		const ELEM first_wch = str_view2[0];
 		if (first_wch == 'f' || first_wch == 'F') {
 			std::string buff;
 			__do_prepare_buff_for_parse(&buff, str_view2, 6, ';', [](char ch) -> bool {
