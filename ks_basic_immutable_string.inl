@@ -88,14 +88,14 @@ public:
 	}
 
 public:
-	ks_basic_immutable_string slice(size_t from, size_t to) const& { return this->do_slice(from, to); }
-	ks_basic_immutable_string slice(size_t from, size_t to)&& { return this->detach().do_slice(from, to); }
+	ks_basic_immutable_string slice(size_t from, size_t to = size_t(-1)) const& { return this->do_slice(from, to); }
+	ks_basic_immutable_string slice(size_t from, size_t to = size_t(-1))&& { return this->detach().do_slice(from, to); }
+
+	ks_basic_immutable_string substr(size_t pos, size_t count = size_t(-1)) const& { return this->do_substr(pos, count); }
+	ks_basic_immutable_string substr(size_t pos, size_t count = size_t(-1))&& { return this->detach().do_substr(pos, count); }
 
 	ks_basic_immutable_string slice(const_iterator from, const_iterator to) const& { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->do_slice(from_pos, to_pos); }
 	ks_basic_immutable_string slice(const_iterator from, const_iterator to)&& { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->detach().do_slice(from_pos, to_pos); }
-
-	ks_basic_immutable_string substr(size_t pos, size_t count) const& { return this->do_substr(pos, count); }
-	ks_basic_immutable_string substr(size_t pos, size_t count)&& { return this->detach().do_substr(pos, count); }
 
 	ks_basic_immutable_string substr(const_iterator from, const_iterator to) const& { size_t offset = from - this->cbegin(), count = to - from; return this->do_substr(offset, count); }
 	ks_basic_immutable_string substr(const_iterator from, const_iterator to)&& { size_t offset = from - this->cbegin(), count = to - from; return this->detach().do_substr(offset, count); }

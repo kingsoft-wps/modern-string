@@ -406,14 +406,14 @@ public:
 
 public:
 	//注：for optimization, use immutable-string as return-type
-	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to) const& { return this->to_immutable().slice(from, to); }
-	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to)&& { return this->detach_to_immutable().slice(from, to); }
+	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to = size_t(-1)) const& { return this->to_immutable().slice(from, to); }
+	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to = size_t(-1))&& { return this->detach_to_immutable().slice(from, to); }
+
+	ks_basic_immutable_string<ELEM> substr(size_t offset, size_t count = size_t(-1)) const& { return this->to_immutable().substr(offset, count); }
+	ks_basic_immutable_string<ELEM> substr(size_t offset, size_t count = size_t(-1))&& { return this->detach_to_immutable().substr(offset, count); }
 
 	ks_basic_immutable_string<ELEM> slice(const_iterator from, const_iterator to) const& { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->to_immutable().slice(from_pos, to_pos); }
 	ks_basic_immutable_string<ELEM> slice(const_iterator from, const_iterator to)&& { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->detach_to_immutable().slice(from_pos, to_pos); }
-
-	ks_basic_immutable_string<ELEM> substr(size_t offset, size_t count) const& { return this->to_immutable().substr(offset, count); }
-	ks_basic_immutable_string<ELEM> substr(size_t offset, size_t count)&& { return this->detach_to_immutable().substr(offset, count); }
 
 	ks_basic_immutable_string<ELEM> substr(const_iterator from, const_iterator to) const& { size_t offset = from - this->cbegin(), count = to - from; return this->to_immutable().substr(offset, count); }
 	ks_basic_immutable_string<ELEM> substr(const_iterator from, const_iterator to)&& { size_t offset = from - this->cbegin(), count = to - from; return this->detach_to_immutable().substr(offset, count); }
