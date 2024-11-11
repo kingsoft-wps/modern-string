@@ -282,7 +282,7 @@ public:
 		const size_t this_length = this->length();
 		if (pos > this_length)
 			throw std::out_of_range("ks_basic_mutable_string::fill(pos, number, ch) out-of-range exception");
-		if (number == size_t(-1))
+		if (ptrdiff_t(number) < 0)
 			number = this_length - pos;
 
 		if (number == 1) {

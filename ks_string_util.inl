@@ -23,9 +23,12 @@ namespace ks_string_util {
 	}
 	template <class ELEM>
 	bool __is_string_empty(const ELEM* p, size_t len) {
-		return len != -1
-			? len == 0 || p[0] == 0
-			: __is_string_empty(p);
+		if (len == 0)
+			return true;
+		else if (ptrdiff_t(len) < 0)
+			return __is_string_empty(p);
+		else
+			return p[0] == 0;
 	}
 	template <class ELEM>
 	bool __is_string_empty(const ks_basic_string_view<ELEM>& str_view) {

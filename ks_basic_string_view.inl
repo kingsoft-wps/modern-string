@@ -50,7 +50,7 @@ public:
 public:
 	constexpr ks_basic_string_view() : m_p(nullptr), m_length(0) {}
 	constexpr ks_basic_string_view(const ELEM* p) : m_p(p), m_length(__c_strlen(p)) {}
-	constexpr ks_basic_string_view(const ELEM* p, size_t count) : m_p(p), m_length(count == size_t(-1) ? __c_strlen(p) : count) {}
+	constexpr ks_basic_string_view(const ELEM* p, size_t count) : m_p(p), m_length(ptrdiff_t(count) < 0 ? __c_strlen(p) : count) {}
 
 	//copy ctor
 	ks_basic_string_view(const ks_basic_string_view& other) = default;
@@ -141,7 +141,7 @@ public:
 			constexpr ELEM space_chars[] = { ' ', '\t', '\r', '\n', '\f', '\v', '\0' };
 			constexpr size_t space_char_count = sizeof(space_chars) / sizeof(space_chars[0]);
 			size_t pos = this->find_first_not_of(space_chars, 0, space_char_count);
-			if (pos != -1)
+			if (pos != size_t(-1))
 				m_p += pos;
 			else
 				m_p += m_length;
@@ -151,8 +151,8 @@ public:
 		if (!this->empty()) {
 			constexpr ELEM space_chars[] = { ' ', '\t', '\r', '\n', '\f', '\v', '\0' };
 			constexpr size_t space_char_count = sizeof(space_chars) / sizeof(space_chars[0]);
-			size_t pos = this->find_last_not_of(space_chars, -1, space_char_count);
-			if (pos != -1)
+			size_t pos = this->find_last_not_of(space_chars, size_t(-1), space_char_count);
+			if (pos != size_t(-1))
 				m_length = pos + 1;
 			else
 				m_length = 0;
@@ -163,45 +163,38 @@ public:
 		if (this->empty() || n == 1)
 			return { *this };
 
-		if (sep.empty()) {
-			size_t fixed_n = n;
-			if (fixed_n <= 0)
-				fixed_n = this->length();
-			else if (fixed_n > this->length())
-				fixed_n = this->length();
+		size_t fixed_n = size_t(n);
+		if (ptrdiff_t(fixed_n) <= 0)
+			fixed_n = this->length();
+		else if (fixed_n > this->length())
+			fixed_n = this->length();
 
+
+		if (sep.empty()) {
 			std::vector<ks_basic_string_view<ELEM>> ret;
 			ret.reserve(fixed_n);
 
-			for (size_t i = 0; i < fixed_n - 1; ++i) {
+			for (size_t i = 0; i + 1 < fixed_n; ++i) 
 				ret.push_back(this->unsafe_subview(i, 1));
-			}
-
 			ret.push_back(this->unsafe_subview(fixed_n, this->length()));
 
 			return ret;
 		}
 		else {
-			size_t fixed_n = n;
-			if (fixed_n <= 0)
-				fixed_n = size_t(-1);
-
 			std::vector<ks_basic_string_view<ELEM>> ret;
 			ret.reserve(std::min(fixed_n, size_t(4))); //init as at-most 4 capa
 
-			size_t pos = 0;
-			for (size_t i = 0; i < fixed_n - 1; ++i) {
-				size_t pos_next = this->do_find(sep, pos);
-				if (pos_next == size_t(-1))
+			size_t next_pos = 0;
+			for (size_t i = 0; i + 1 < fixed_n; ++i) {
+				size_t next_pos_end = this->do_find(sep, next_pos);
+				if (next_pos_end == size_t(-1))
 					break;
 
-				ret.push_back(this->unsafe_subview(pos, pos_next - pos));
-				pos = pos_next + sep.length();
+				ret.push_back(this->unsafe_subview(next_pos, next_pos_end - next_pos));
+				next_pos = next_pos_end + sep.length();
 			}
 
-			if (!(n == 0 && pos == this->length())) {
-				ret.push_back(this->unsafe_subview(pos, this->length() - pos));
-			}
+			ret.push_back(this->unsafe_subview(next_pos, this->length() - next_pos));
 
 			return ret;
 		}
@@ -336,7 +329,7 @@ public:
 	ks_basic_string_view substr(size_t pos, size_t count) const {
 		if (pos > m_length)
 			throw std::out_of_range("ks_basic_string_view::substr(pos, count) out-of-range exception");
-		if (count == size_t(-1))
+		if (ptrdiff_t(count) < 0)
 			count = m_length - pos;
 		if (pos + count > m_length || count > m_length)
 			throw std::out_of_range("ks_basic_string_view::substr(pos, count) out-of-range exception");

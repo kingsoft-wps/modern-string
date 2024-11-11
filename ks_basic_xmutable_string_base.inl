@@ -440,7 +440,7 @@ protected:
 	}
 
 	void do_replace(size_t pos, size_t number, const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
-		if (number == size_t(-1))
+		if (ptrdiff_t(number) < 0)
 			number = this->length() - pos;
 
 		const size_t pos_end = pos + number;
@@ -495,7 +495,7 @@ protected:
 	}
 
 	void do_replace(size_t pos, size_t number, size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
-		if (number == size_t(-1))
+		if (ptrdiff_t(number) < 0)
 			number = this->length() - pos;
 
 		size_t pos_end = pos + number;
@@ -534,7 +534,7 @@ protected:
 
 		//find first match
 		size_t pos = this->find(sub);
-		if (pos == size_t(-1))
+		if (ptrdiff_t(pos) < 0)
 			return;
 		//after first match being found, we check whether sub and replacement are equal, and if they are, we need do nothing.
 		if (sub == replacement)
@@ -545,7 +545,7 @@ protected:
 		pos += sub.length();
 		for (size_t i = 1; i < n; ++i) {
 			pos = this->find(sub, pos);
-			if (pos == size_t(-1))
+			if (ptrdiff_t(pos) < 0)
 				break;
 			pos32_list.push_back(uint32_t(pos));
 			pos += sub.length();
@@ -668,7 +668,7 @@ protected:
 	}
 
 	void do_erase(size_t pos, size_t number, bool ensure_end_ch0) {
-		if (number == size_t(-1))
+		if (ptrdiff_t(number) < 0)
 			number = this->length() - pos;
 
 		size_t pos_end = pos + number;
@@ -813,7 +813,7 @@ protected:
 		const size_t this_length = this->length();
 		if (pos > this_length)
 			throw std::out_of_range("ks_basic_xmutable_string_base::substr(pos, count) out-of-range exception");
-		if (count == size_t(-1))
+		if (ptrdiff_t(count) < 0)
 			count = this_length - pos;
 		if (pos + count > this_length || count > this_length)
 			throw std::out_of_range("ks_basic_xmutable_string_base::substr(pos, count) out-of-range exception");
