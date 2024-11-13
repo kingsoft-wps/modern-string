@@ -783,6 +783,56 @@ public:
 	size_t find_last_not_of(ELEM ch, size_t pos = -1) const { return this->view().find_last_of(ch, pos); }
 
 protected:
+	ks_basic_xmutable_string_base do_slice(size_t from, size_t to) const {
+		const size_t this_length = this->length();
+		if (from > this_length)
+			throw std::out_of_range("ks_basic_xmutable_string_base::slice(from, to) out-of-range exception");
+		if (to > this_length)
+			to = this_length;
+		else if (to < from)
+			to = from;
+		return this->unsafe_substr(from, to - from);
+	}
+
+	ks_basic_xmutable_string_base do_substr(size_t pos, size_t count) const {
+		const size_t this_length = this->length();
+		if (pos > this_length)
+			throw std::out_of_range("ks_basic_xmutable_string_base::substr(pos, count) out-of-range exception");
+		if (count > this_length - pos)
+			count = this_length - pos;
+		return this->unsafe_substr(pos, count);
+	}
+
+protected:
+	ks_basic_xmutable_string_base unsafe_substr(size_t pos, size_t count) const {
+		ASSERT(this->view().unsafe_subview(pos, count + 1).is_subview_of(this->unsafe_whole_view()));
+		if (count <= _SSO_BUFFER_SPACE - 1) {
+			return ks_basic_xmutable_string_base(this->view().data() + (ptrdiff_t)pos, count);
+		}
+		else {
+			ks_basic_xmutable_string_base slice = *this;
+			ASSERT(slice.is_ref_mode());
+			auto* slice_ref_ptr = slice._my_ref_ptr();
+			slice_ref_ptr->p += (ptrdiff_t)pos;
+			slice_ref_ptr->offset32 += (int32_t)(ptrdiff_t)pos;
+			slice_ref_ptr->length32 = (uint32_t)count;
+			return slice;
+		}
+	}
+
+	ks_basic_string_view<ELEM> unsafe_whole_view() const {
+		if (this->is_sso_mode()) {
+			auto* sso_ptr = _my_sso_ptr();
+			return ks_basic_string_view<ELEM>(sso_ptr->buffer, _SSO_BUFFER_SPACE);
+		}
+		else {
+			auto* ref_ptr = _my_ref_ptr();
+			ELEM* alloc_addr = ref_ptr->alloc_addr();
+			return ks_basic_string_view<ELEM>(alloc_addr, ks_basic_string_allocator<ELEM>::_get_space32_value(alloc_addr));
+		}
+	}
+
+protected:
 	template <class STR_TYPE, class _ = std::enable_if_t<std::is_base_of_v<ks_basic_xmutable_string_base<ELEM>, STR_TYPE>>>
 	std::vector<STR_TYPE> do_split(const ks_basic_string_view<ELEM>& sep, size_t n) const {
 		const auto& this_view = this->view();
@@ -797,27 +847,27 @@ protected:
 		return ret;
 	}
 
-protected:
-	ks_basic_xmutable_string_base do_slice(size_t from, size_t to) const {
-		const size_t this_length = this->length();
-		if (from > this_length)
-			from = this_length;
-		if (to < from)
-			to = from;
-		else if (to > this_length)
-			to = this_length;
-		return this->unsafe_substr(from, to - from);
+public:
+	const ELEM& front() const {
+		ASSERT(!this->empty());
+		return *this->data();
 	}
 
-	ks_basic_xmutable_string_base do_substr(size_t pos, size_t count) const {
-		const size_t this_length = this->length();
-		if (pos > this_length)
-			throw std::out_of_range("ks_basic_xmutable_string_base::substr(pos, count) out-of-range exception");
-		if (ptrdiff_t(count) < 0)
-			count = this_length - pos;
-		if (pos + count > this_length || count > this_length)
-			throw std::out_of_range("ks_basic_xmutable_string_base::substr(pos, count) out-of-range exception");
-		return this->unsafe_substr(pos, count);
+	const ELEM& back() const {
+		ASSERT(!this->empty());
+		return *(this->data_end() - 1);
+	}
+
+	const ELEM& at(size_t pos) const {
+		if (pos >= this->length())
+			throw std::out_of_range("ks_basic_xmutable_string_base::at(pos) out-of-range exception");
+		else
+			return this->data()[pos];
+	}
+
+	const ELEM& operator[](size_t pos) const {
+		ASSERT(pos < this->length());
+		return this->data()[pos];
 	}
 
 public:
@@ -848,34 +898,12 @@ public:
 			: (ks_basic_string_allocator<ELEM>::_get_space32_value(_my_ref_ptr()->alloc_addr()) - 1) - _my_ref_ptr()->offset32;
 	}
 
-	ks_basic_string_view<ELEM> view() const {
-		return ks_basic_string_view<ELEM>(this->data(), this->length());
-	}
-
-	const ELEM& at(size_t pos) const {
-		if (pos >= this->length())
-			throw std::out_of_range("ks_basic_xmutable_string_base::at(pos) out-of-range exception");
-		else
-			return this->data()[pos];
-	}
-
-	const ELEM& operator[](size_t pos) const {
-		ASSERT(pos < this->length());
-		return this->data()[pos];
-	}
-
-	const ELEM& front() const {
-		ASSERT(!this->empty());
-		return *this->data();
-	}
-
-	const ELEM& back() const {
-		ASSERT(!this->empty());
-		return *(this->data_end() - 1);
-	}
-
 	bool is_exclusive() const {
 		return !(this->is_ref_mode() && ks_basic_string_allocator<ELEM>::_get_refcount32_value(_my_ref_ptr()->alloc_addr()) > 1);
+	}
+
+	ks_basic_string_view<ELEM> view() const {
+		return ks_basic_string_view<ELEM>(this->data(), this->length());
 	}
 
 protected:
@@ -885,37 +913,6 @@ protected:
 
 	ELEM* unsafe_data() const { return (ELEM*)this->data(); }
 	ELEM* unsafe_data_end() const { return (ELEM*)this->data_end(); }
-
-	ks_basic_string_view<ELEM> unsafe_whole_view() const {
-		if (this->is_sso_mode()) {
-			auto* sso_ptr = _my_sso_ptr();
-			return ks_basic_string_view<ELEM>(sso_ptr->buffer, _SSO_BUFFER_SPACE);
-		}
-		else {
-			auto* ref_ptr = _my_ref_ptr();
-			ELEM* alloc_addr = ref_ptr->alloc_addr();
-			return ks_basic_string_view<ELEM>(alloc_addr, ks_basic_string_allocator<ELEM>::_get_space32_value(alloc_addr));
-		}
-	}
-
-	ks_basic_xmutable_string_base unsafe_substr(size_t pos, size_t count) const {
-		ASSERT(this->view().unsafe_subview(pos, count + 1).is_subview_of(this->unsafe_whole_view()));
-		if (count <= _SSO_BUFFER_SPACE - 1) {
-			return ks_basic_xmutable_string_base(this->view().data() + (ptrdiff_t)pos, count);
-		}
-		else {
-			ks_basic_xmutable_string_base slice = *this;
-			ASSERT(slice.is_ref_mode());
-			auto* slice_ref_ptr = slice._my_ref_ptr();
-			slice_ref_ptr->p += (ptrdiff_t)pos;
-			slice_ref_ptr->offset32 += (int32_t)(ptrdiff_t)pos;
-			slice_ref_ptr->length32 = (uint32_t)count;
-			return slice;
-		}
-	}
-
-	friend class ks_basic_mutable_string<ELEM>;
-	friend class ks_basic_immutable_string<ELEM>;
 
 private:
 	static constexpr uint8_t _SSO_MODE = 0;
@@ -981,6 +978,9 @@ protected:
 	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
 	template <class AllocType>
 	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
+
+	friend class ks_basic_mutable_string<ELEM>;
+	friend class ks_basic_immutable_string<ELEM>;
 };
 
 

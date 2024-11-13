@@ -309,30 +309,23 @@ protected:
 	}
 
 public:
-	const ELEM* data() const { return m_p; }
-	const ELEM* data_end() const { return m_p + m_length; }
-	size_t length() const { return m_length; }
-	size_t size() const { return m_length; }
-	bool empty() const { return m_length == 0; }
-
-public:
-	ks_basic_string_view slice(size_t from, size_t to) const {
-		if (from > m_length)
-			from = m_length;
-		if (to < from)
+	ks_basic_string_view slice(size_t from, size_t to = size_t(-1)) const {
+		const size_t this_length = this->length();
+		if (from > this_length)
+			throw std::out_of_range("ks_basic_string_view::slice(from, to) out-of-range exception");
+		if (to > this_length)
+			to = this_length;
+		else if (to < from)
 			to = from;
-		else if (to > m_length)
-			to = m_length;
 		return this->unsafe_subview(from, to - from);
 	}
 
-	ks_basic_string_view substr(size_t pos, size_t count) const {
-		if (pos > m_length)
+	ks_basic_string_view substr(size_t pos, size_t count = size_t(-1)) const {
+		const size_t this_length = this->length();
+		if (pos > this_length)
 			throw std::out_of_range("ks_basic_string_view::substr(pos, count) out-of-range exception");
-		if (ptrdiff_t(count) < 0)
-			count = m_length - pos;
-		if (pos + count > m_length || count > m_length)
-			throw std::out_of_range("ks_basic_string_view::substr(pos, count) out-of-range exception");
+		if (count > this_length - pos)
+			count = this_length - pos;
 		return this->unsafe_subview(pos, count);
 	}
 
@@ -342,27 +335,12 @@ public:
 		return ret;
 	}
 
-	const ELEM& at(size_t pos) const {
-		if (pos >= this->length())
-			throw std::out_of_range("ks_basic_string_view::at(pos) out-of-range exception");
-		return this->data()[pos];
+protected:
+	ks_basic_string_view unsafe_subview(size_t pos, size_t count) const {
+		return ks_basic_string_view(m_p + (ptrdiff_t)pos, count);
 	}
 
-	const ELEM& operator[](size_t pos) const {
-		ASSERT(pos < this->length());
-		return this->data()[pos];
-	}
-
-	const ELEM& front() const {
-		ASSERT(!this->empty());
-		return *this->data();
-	}
-
-	const ELEM& back() const {
-		ASSERT(!this->empty());
-		return *(this->data_end() - 1);
-	}
-
+public:
 	bool is_subview_of(const ks_basic_string_view& other) const {
 		return this->data() >= other.data() && this->data_end() <= other.data_end();
 	}
@@ -377,10 +355,34 @@ public:
 		return true;
 	}
 
-private:
-	ks_basic_string_view unsafe_subview(size_t pos, size_t count) const {
-		return ks_basic_string_view(m_p + (ptrdiff_t)pos, count);
+public:
+	const ELEM& front() const {
+		ASSERT(!this->empty());
+		return *this->data();
 	}
+
+	const ELEM& back() const {
+		ASSERT(!this->empty());
+		return *(this->data_end() - 1);
+	}
+
+	const ELEM& at(size_t pos) const {
+		if (pos >= this->length())
+			throw std::out_of_range("ks_basic_string_view::at(pos) out-of-range exception");
+		return this->data()[pos];
+	}
+
+	const ELEM& operator[](size_t pos) const {
+		ASSERT(pos < this->length());
+		return this->data()[pos];
+	}
+
+public:
+	const ELEM* data() const { return m_p; }
+	const ELEM* data_end() const { return m_p + m_length; }
+	size_t length() const { return m_length; }
+	size_t size() const { return m_length; }
+	bool empty() const { return m_length == 0; }
 
 private:
 	const ELEM* m_p;
