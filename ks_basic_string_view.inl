@@ -176,6 +176,7 @@ public:
 
 			for (size_t i = 0; i + 1 < fixed_n; ++i) 
 				ret.push_back(this->unsafe_subview(i, 1));
+
 			ret.push_back(this->unsafe_subview(fixed_n, this->length()));
 
 			return ret;
