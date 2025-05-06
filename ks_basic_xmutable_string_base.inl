@@ -83,8 +83,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_st
 	else {
 		ASSERT(strdata_addr[str_rvref.length()] == 0); //should have end-ch0 already
 		ASSERT(strdata_addr[str_rvref.capacity()] == 0); //should have end-ch0 already
-		ASSERT(ks_basic_string_allocator<ELEM>::_get_refcount32_value(strdata_addr) == 0);
-		*(volatile uint32_t*)ks_basic_string_allocator<ELEM>::_get_refcount32_p(strdata_addr) = 1;
+		_atomic_initref(strdata_addr);
 
 		auto* ref_ptr = _my_ref_ptr();
 		ref_ptr->mode = _REF_MODE;

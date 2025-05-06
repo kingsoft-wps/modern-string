@@ -46,15 +46,15 @@ public:
         if (_Count > 0x7FFFFFFFu)
             throw std::bad_array_new_length();
         _Count = ((_Count * sizeof(ELEM) + 3) & ~size_t(0x03)) / sizeof(ELEM);
-        size_t alloc_size = _header_size() + ((_Count * sizeof(ELEM) + 3) & ~size_t(0x03));
+        size_t alloc_size = __header_size() + ((_Count * sizeof(ELEM) + 3) & ~size_t(0x03));
         ASSERT(alloc_size % 4 == 0);
         uintptr_t addr = (uintptr_t)malloc(alloc_size);
         if (addr == 0)
             throw std::bad_alloc();
         ASSERT(addr % 4 == 0);
-        addr += _header_size();
-        *(uint32_t*)_get_space32_p((ELEM*)(addr)) = uint32_t(_Count);
-        *(uint32_t*)_get_refcount32_p((ELEM*)(addr)) = 1;
+        addr += __header_size();
+        *(uint32_t*)__get_space32_p((ELEM*)(addr)) = uint32_t(_Count);
+        *(uint32_t*)__get_refcount32_p((ELEM*)(addr)) = 0;
         return (ELEM*)(addr);
     }
 
@@ -64,29 +64,13 @@ public:
 
     static void deallocate(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
-        ASSERT(_get_refcount32_value(_Ptr) >= 1);
-        if (--(*(std::atomic<uint32_t>*)_get_refcount32_p(_Ptr)) == 0) {
-            free((void*)(uintptr_t(_Ptr) - _header_size()));
-        }
+        ASSERT(*(uint32_t*)__get_refcount32_p(_Ptr) == 0);
+        free((void*)(uintptr_t(_Ptr) - __header_size()));
     }
 
     static void deallocate(ELEM* _Ptr, size_t _Count) {
         ASSERT(_Ptr != nullptr);
         ASSERT(_get_space32_value(_Ptr) == ((_Count * sizeof(ELEM) + 3) & ~size_t(0x03)) / sizeof(ELEM));
-        deallocate(_Ptr);
-    }
-
-    static ELEM* _atomic_alloc(size_t _Count) {
-        return allocate(_Count);
-    }
-
-    static void _atomic_addref(ELEM* _Ptr) {
-        ASSERT(_Ptr != nullptr);
-        ASSERT(_get_refcount32_value(_Ptr) >= 1);
-        ++(*(std::atomic<uint32_t>*)_get_refcount32_p(_Ptr));
-    }
-
-    static void _atomic_release(ELEM* _Ptr) {
         deallocate(_Ptr);
     }
 
@@ -101,36 +85,64 @@ public:
     }
 
     static constexpr size_t max_size() {
-        return (size_t(-1) - _header_size()) / sizeof(ELEM);
-    }
-
-    static constexpr size_t _header_size() {
-        static_assert(alignof(ELEM) < 8 ? true : alignof(ELEM) % 4 == 0, "the asign of larger ELEM type must be multi of 4");
-        return alignof(ELEM) < 8 ? 8 : alignof(ELEM);
-    }
-
-    static constexpr void* _get_space32_p(ELEM* p) {
-        ASSERT(p != nullptr);
-        ASSERT(uintptr_t(p) % 4 == 0);
-        return (void*)(uint32_t*)(uintptr_t(p) - 4);
-    }
-
-    static constexpr void* _get_refcount32_p(ELEM* p) {
-        ASSERT(p != nullptr);
-        ASSERT(uintptr_t(p) % 4 == 0);
-        return (void*)(uint32_t*)(uintptr_t(p) - 8);
-    }
-
-    static constexpr uint32_t _get_space32_value(ELEM* p) {
-        return *(const uint32_t*)_get_space32_p(p);
-    }
-
-    static constexpr uint32_t _get_refcount32_value(ELEM* p) {
-        return *(volatile uint32_t*)_get_refcount32_p(p);
+        return (size_t(-1) - __header_size()) / sizeof(ELEM);
     }
 
     template <class _Uty> 
     bool operator ==(const ks_basic_string_allocator<_Uty>&) const { return true; }
     template <class _Uty> 
     bool operator !=(const ks_basic_string_allocator<_Uty>&) const { return false; }
+
+public:
+    static ELEM* _atomic_alloc(size_t _Count) {
+        ELEM* _Ptr = allocate(_Count);
+        _atomic_initref(_Ptr);
+        return _Ptr;
+    }
+
+    static void _atomic_initref(ELEM* _Ptr) {
+        ASSERT(_Ptr != nullptr);
+        ASSERT(_get_refcount32_value(_Ptr) == 0);
+        *(volatile uint32_t*)__get_refcount32_p((ELEM*)(_Ptr)) = 1;
+    }
+
+    static void _atomic_addref(ELEM* _Ptr) {
+        ASSERT(_Ptr != nullptr);
+        ASSERT(_get_refcount32_value(_Ptr) >= 1);
+        ++(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr));
+    }
+
+    static void _atomic_release(ELEM* _Ptr) {
+        ASSERT(_Ptr != nullptr);
+        ASSERT(_get_refcount32_value(_Ptr) >= 1);
+        if (--(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)) == 0) {
+            deallocate(_Ptr);
+        }
+    }
+
+    static constexpr uint32_t _get_space32_value(ELEM* p) {
+        return *(uint32_t*)__get_space32_p(p);
+    }
+
+    static constexpr uint32_t _get_refcount32_value(ELEM* p) {
+        return *(volatile uint32_t*)__get_refcount32_p(p);
+    }
+
+private:
+    static constexpr size_t __header_size() {
+        static_assert(alignof(ELEM) < 8 ? true : alignof(ELEM) % 4 == 0, "the asign of larger ELEM type must be multi of 4");
+        return alignof(ELEM) < 8 ? 8 : alignof(ELEM);
+    }
+
+    static constexpr void* __get_space32_p(ELEM* p) {
+        ASSERT(p != nullptr);
+        ASSERT(uintptr_t(p) % 4 == 0);
+        return (void*)(uint32_t*)(uintptr_t(p) - 4);
+    }
+
+    static constexpr void* __get_refcount32_p(ELEM* p) {
+        ASSERT(p != nullptr);
+        ASSERT(uintptr_t(p) % 4 == 0);
+        return (void*)(uint32_t*)(uintptr_t(p) - 8);
+    }
 };

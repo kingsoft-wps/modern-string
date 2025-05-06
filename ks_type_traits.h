@@ -198,12 +198,12 @@ public:
 
 template <class ELEM> class ks_char_traits : public __ks_underlying_char_traits<ELEM, ELEM> {};
 
-template <> class ks_char_traits<uint32_t> : public __ks_underlying_char_traits<uint32_t, char32_t> {};
-template <> class ks_char_traits<uint16_t> : public __ks_underlying_char_traits<uint16_t, char16_t> {};
 #if __cplusplus < 202002L
 template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, unsigned char> {};
 #else
 template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, char8_t> {};
 #endif
+template <> class ks_char_traits<uint16_t> : public __ks_underlying_char_traits<uint16_t, char16_t> {};
+template <> class ks_char_traits<uint32_t> : public __ks_underlying_char_traits<uint32_t, char32_t> {};
 
 #endif //__KS_CHAR_TRAITS_DEF
