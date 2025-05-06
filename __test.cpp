@@ -19,8 +19,10 @@ limitations under the License.
 
 
 int main() {
+#ifdef _WIN32
     std::cout.imbue(std::locale("zh_CN"));
     std::wcout.imbue(std::locale("zh_CN"));
+#endif
 
     ks_mutable_string ms1("a");
     ks_mutable_string ms2("bbbbbabbbbbabbbbbabbbbbabbbbb");
@@ -76,7 +78,7 @@ int main() {
 
     ms1.substitute('a', 'x');
     std::cout << "ms1.substitute(a=>x): " << ms1 << "\n";
-    ms2.substitute('b', 'c', 2);
+    ms2.substitute_n('b', 'c', 2);
     std::cout << "ms2.substitute(b=>c, 2): " << ms2 << "\n";
     ms2.substitute("b", "c");
     std::cout << "ms2.substitute(b=>c): " << ms2 << "\n";
@@ -115,21 +117,23 @@ int main() {
     std::cout << " ]\n";
 
     ks_immutable_string ims10 = ks_string_util::join(ims2_subs.begin(), ims2_subs.end(), "z", "\"", "\"");
-    ks_immutable_string ims10a = ks_string_util::concat(ims2_subs.begin(), ims2_subs.end());
+    ks_immutable_string ims10a = ks_string_util::join(ims2_subs.begin(), ims2_subs.end(), "");
     std::cout << "ims10(join): " << ims10 << "\n";
     std::cout << "ims10a(concat): " << ims10a << "\n";
 
-    std::cout << "parse-int 100: " << ks_string_util::parse_int(L"100") << "\n";
-    std::cout << "parse-double 100.2: " << ks_string_util::parse_double(L"100.2") << "\n";
-    std::cout << "parse-bool true: " << ks_string_util::parse_bool(L"true") << "\n";
+    std::cout << "parse-int 100: " << ks_string_util::parse_int("100") << "\n";
+    std::cout << "parse-double 100.2: " << ks_string_util::parse_double("100.2") << "\n";
+    std::cout << "parse-bool true: " << ks_string_util::parse_bool("true") << "\n";
 
     std::cout << "to-string 200: " << ks_string_util::to_string(200) << "\n";
     std::cout << "to-string true: " << ks_string_util::to_string(true) << "\n";
 
+#ifdef _WIN32
     std::wcout << "convert utf8: " << ks_string_util::wstring_from_utf8(ks_string_util::wstring_to_utf8((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
     std::wcout << "convert utf32: " << ks_string_util::wstring_from_utf32(ks_string_util::wstring_to_utf32((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
     std::wcout << "convert ansi: " << ks_string_util::wstring_from_ansi(ks_string_util::wstring_to_ansi((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
     std::wcout << "convert wide: " << ks_string_util::wstring_from_wide(ks_string_util::wstring_to_wide((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
+#endif
 
     ks_mutable_string ms10;
     std::cout << "please input ms10: ";

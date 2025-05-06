@@ -19,7 +19,7 @@ limitations under the License.
 
 
 template <class ELEM>
-struct ks_basic_pointer_iterator {
+struct MODERN_STRING_INLINE_API ks_basic_pointer_iterator {
 public:
 	using iterator_category = std::random_access_iterator_tag;
 	using difference_type = ptrdiff_t;

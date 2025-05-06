@@ -17,7 +17,7 @@ limitations under the License.
 
 #include "base.h"
 
-#include "ks_basic_string_view.inl"
+#include "ks_basic_string_view.h"
 
 using ks_string_view = ks_basic_string_view<char>;
 using ks_wstring_view = ks_basic_string_view<WCHAR>;

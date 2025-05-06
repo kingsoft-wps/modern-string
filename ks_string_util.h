@@ -20,41 +20,48 @@ limitations under the License.
 namespace ks_string_util {
 	//stringize ...
 	template <class T>
+	MODERN_STRING_INLINE_API
 	ks_immutable_string to_string(const T& v);
 	template <class T>
+	MODERN_STRING_INLINE_API
 	ks_immutable_wstring to_wstring(const T& v);
 
 	//join ...
-	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_string_view>>>
+	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_string_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_string join(IT first, IT last, const ks_string_view& sep);
-	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_wstring_view>>>
+	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_wstring_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep);
 
-	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_string_view>>>
+	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_string_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_string join(IT first, IT last, const ks_string_view& sep, const ks_string_view& prefix, const ks_string_view& suffix);
-	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_wstring_view>>>
+	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_wstring_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep, const ks_wstring_view& prefix, const ks_wstring_view& suffix);
 
 	//concat
-	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_string_view>>>
-	ks_immutable_string concat(IT first, IT last);
-	template <class IT, class _ = std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_wstring_view>>>
-	ks_immutable_wstring concat(IT first, IT last);
-
 	template <class T1, class... Ts, class _ = std::enable_if_t<std::is_convertible_v<T1, ks_string_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_string concat(const T1& s1, const Ts&... sx);
 	template <class T1, class... Ts, class _ = std::enable_if_t<std::is_convertible_v<T1, ks_wstring_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_wstring concat(const T1& s1, const Ts&... sx);
 
 	//case convert ...
 	template <class STR_TYPE, class _ = std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_string_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_string to_lower(STR_TYPE&& str);
 	template <class STR_TYPE, class _ = std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_wstring_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_wstring to_lower(STR_TYPE&& str);
 
 	template <class STR_TYPE, class _ = std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_string_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_string to_upper(STR_TYPE&& str);
 	template <class STR_TYPE, class _ = std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_wstring_view>>>
+	MODERN_STRING_INLINE_API
 	ks_immutable_wstring to_upper(STR_TYPE&& str);
 
 	//icase compare ...

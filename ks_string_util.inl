@@ -132,30 +132,25 @@ namespace ks_string_util {
 		return std::move(mut_ret);
 	}
 
-	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_string_view>>*/>
+	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_string_view>>*/>
 	ks_immutable_string join(IT first, IT last, const ks_string_view& sep) {
 		return __do_join<char>(first, last, sep, ks_string_view{}, ks_string_view{});
 	}
-	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_wstring_view>>*/>
+	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_wstring_view>>*/>
 	ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep) {
 		return __do_join<WCHAR>(first, last, sep, ks_wstring_view{}, ks_wstring_view{});
 	}
 
-	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_string_view>>*/>
+	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_string_view>>*/>
 	ks_immutable_string join(IT first, IT last, const ks_string_view& sep, const ks_string_view& prefix, const ks_string_view& suffix) {
 		return __do_join<char>(first, last, sep, prefix, suffix);
 	}
-	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_wstring_view>>*/>
+	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_wstring_view>>*/>
 	ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep, const ks_wstring_view& prefix, const ks_wstring_view& suffix) {
 		return __do_join<WCHAR>(first, last, sep, prefix, suffix);
 	}
 
 	//concat
-	template <class ELEM, class IT>
-	ks_basic_immutable_string<ELEM> __do_concat_it(IT first, IT last) {
-		return __do_join<ELEM>(first, last, ks_basic_string_view<ELEM>(), ks_basic_string_view<ELEM>(), ks_basic_string_view<ELEM>());
-	}
-
 	template <class ELEM, class T1, class... Ts>
 	ks_basic_immutable_string<ELEM> __do_concat_va(const T1& s1, const Ts&... sx) {
 		if (sizeof...(sx) == 0)
@@ -178,7 +173,7 @@ namespace ks_string_util {
 			return s1;
 
 		str_view_arr[0] = __to_string_view(s1);
-		return __do_concat_it<ELEM>(str_view_arr, str_view_arr + str_view_arr_size);
+		return __do_join<ELEM>(str_view_arr, str_view_arr + str_view_arr_size, ks_basic_string_view<ELEM>(), ks_basic_string_view<ELEM>(), ks_basic_string_view<ELEM>());
 	}
 
 	template <class ELEM>
@@ -193,15 +188,6 @@ namespace ks_string_util {
 	template <class T1, class... Ts, class _ /*= std::enable_if_t<std::is_convertible_v<T1, ks_wstring_view>>*/>
 	ks_immutable_wstring concat(const T1& s1, const Ts&... sx) {
 		return __do_concat_va<WCHAR>(s1, sx...);
-	}
-
-	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_string_view>>*/>
-	ks_immutable_string concat(IT first, IT last) {
-		return __do_concat_it<char>(first, last);
-	}
-	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(**(IT*)(nullptr)), ks_wstring_view>>*/>
-	ks_immutable_wstring concat(IT first, IT last) {
-		return __do_concat_it<WCHAR>(first, last);
 	}
 
 	//case convert ...

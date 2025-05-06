@@ -19,13 +19,17 @@ set(MY_LIB_TEST_NAME modern-string-test)
 set(MY_SOURCE_FILES
 	#about string
 	ks_string.h
-	ks_basic_mutable_string.inl
-	ks_basic_immutable_string.inl
+	ks_basic_mutable_string.h
+	ks_basic_immutable_string.h
+	ks_basic_xmutable_string_base.h
 	ks_basic_xmutable_string_base.inl
-	ks_basic_string_allocator.inl
+	ks_basic_xmutable_string_base.cpp
+	ks_basic_string_allocator.h
 	#about string-view
 	ks_string_view.h
+	ks_basic_string_view.h
 	ks_basic_string_view.inl
+	ks_basic_string_view.cpp
 	#about string-util
 	ks_string_util.h
 	ks_string_util.inl
@@ -43,13 +47,13 @@ set(MY_SOURCE_FILES
 set(PUBLIC_HEADER_FILES
 	#about string
 	ks_string.h
-	ks_basic_mutable_string.inl
-	ks_basic_immutable_string.inl
-	ks_basic_xmutable_string_base.inl
-	ks_basic_string_allocator.inl
+	ks_basic_mutable_string.h
+	ks_basic_immutable_string.h
+	ks_basic_xmutable_string_base.h
+	ks_basic_string_allocator.h
 	#about string-view
 	ks_string_view.h
-	ks_basic_string_view.inl
+	ks_basic_string_view.h
 	#about string-util
 	ks_string_util.h
 	ks_string_util.inl

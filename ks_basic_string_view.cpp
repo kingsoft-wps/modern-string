@@ -1,4 +1,4 @@
-﻿/* Copyright 2024 The Kingsoft's modern-string Authors. All Rights Reserved.
+/* Copyright 2024 The Kingsoft's modern-string Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,19 +13,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#pragma once
-
 #include "base.h"
-#include "ks_basic_mutable_string.h"
-#include "ks_basic_immutable_string.h"
-
-using ks_mutable_string = ks_basic_mutable_string<char>;
-using ks_immutable_string = ks_basic_immutable_string<char>;
-using ks_mutable_wstring = ks_basic_mutable_string<WCHAR>;
-using ks_immutable_wstring = ks_basic_immutable_string<WCHAR>;
-
-#include "ks_string_util.h"
-
-
-//using ks_string  = ks_immutable_string;
-//using ks_wstring = ks_immutable_wstring;
+#include "ks_basic_string_view.h"

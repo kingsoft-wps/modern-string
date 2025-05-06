@@ -16,12 +16,12 @@ limitations under the License.
 #pragma once
 
 #include "base.h"
-#include "ks_basic_xmutable_string_base.inl"
+#include "ks_basic_xmutable_string_base.h"
 #include <istream>
 
 
 template <class ELEM>
-class ks_basic_mutable_string : public ks_basic_xmutable_string_base<ELEM> {
+class MODERN_STRING_API ks_basic_mutable_string : public ks_basic_xmutable_string_base<ELEM> {
 	using __my_string_base = ks_basic_xmutable_string_base<ELEM>;
 	using __my_string_base::__to_basic_string_view;
 
@@ -72,15 +72,15 @@ public:
 
 	//copy & move ctor (from std::basic_string)
 	template <class AllocType>
-	ks_basic_mutable_string(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) 
+	ks_basic_mutable_string(const std::basic_string<ELEM, ks_char_traits<ELEM>, AllocType>& str)
 		: __my_string_base(__to_basic_string_view(str)) { ASSERT(this->do_check_end_ch0()); }
 	template <class AllocType>
-	ks_basic_mutable_string(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str, size_t offset, size_t count = -1)
+	ks_basic_mutable_string(const std::basic_string<ELEM, ks_char_traits<ELEM>, AllocType>& str, size_t offset, size_t count = -1)
 		: __my_string_base(__to_basic_string_view(str, offset, count)) { ASSERT(this->do_check_end_ch0()); }
 
-	ks_basic_mutable_string(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref) 
+	ks_basic_mutable_string(std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref)
 		: __my_string_base(std::move(str_rvref)) { ASSERT(this->do_check_end_ch0()); }
-	ks_basic_mutable_string(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref, size_t offset, size_t count = -1)
+	ks_basic_mutable_string(std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref, size_t offset, size_t count = -1)
 		: __my_string_base(__my_string_base(std::move(str_rvref)).substr(offset, count)) { ASSERT(this->do_check_end_ch0()); }
 
 public:
@@ -113,7 +113,7 @@ public:
 		//if right is a xmutable-string，do assign directly, so this will ref right.data
 		if (std::is_base_of_v<ks_basic_xmutable_string_base<ELEM>, std::remove_cv_t<std::remove_reference_t<RIGHT>>>)
 			*this = ks_basic_mutable_string(std::forward<RIGHT>(right));
-		else if (std::is_same_v<RIGHT, std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&&>)
+		else if (std::is_same_v<RIGHT, std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&&>)
 			*this = ks_basic_mutable_string(std::forward<RIGHT>(right));
 		else
 			this->do_assign(__to_basic_string_view(right), true);
@@ -124,7 +124,7 @@ public:
 		//if right is a xmutable-string，do assign directly, so this will ref right.data
 		if (std::is_base_of_v<ks_basic_xmutable_string_base<ELEM>, std::remove_cv_t<std::remove_reference_t<RIGHT>>>)
 			*this = ks_basic_mutable_string(std::forward<RIGHT>(right), offset, count);
-		else if (std::is_same_v<RIGHT, std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&&>)
+		else if (std::is_same_v<RIGHT, std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&&>)
 			*this = ks_basic_mutable_string(std::forward<RIGHT>(right), offset, count);
 		else
 			this->do_assign(__to_basic_string_view(right, offset, count), true);
@@ -267,13 +267,23 @@ public:
 	}
 
 	//substitute...
-	ks_basic_mutable_string& substitute(const ks_basic_string_view<ELEM>& old_str, const ks_basic_string_view<ELEM>& new_str, size_t n = -1) {
-		this->do_substitute(old_str, new_str, n, true);
+	ks_basic_mutable_string& substitute(const ks_basic_string_view<ELEM>& old_str, const ks_basic_string_view<ELEM>& new_str) {
+		this->do_substitute_n(old_str, new_str, size_t(-1), true);
 		return *this;
 	}
 
-	ks_basic_mutable_string& substitute(ELEM old_ch, const ELEM new_ch, size_t n = -1) {
-		this->do_substitute(__to_basic_string_view(&old_ch, 1), __to_basic_string_view(&new_ch, 1), n, true);
+	ks_basic_mutable_string& substitute(ELEM old_ch, const ELEM new_ch) {
+		this->do_substitute_n(__to_basic_string_view(&old_ch, 1), __to_basic_string_view(&new_ch, 1), size_t(-1), true);
+		return *this;
+	}
+
+	ks_basic_mutable_string& substitute_n(const ks_basic_string_view<ELEM>& old_str, const ks_basic_string_view<ELEM>& new_str, size_t n = -1) {
+		this->do_substitute_n(old_str, new_str, n, true);
+		return *this;
+	}
+
+	ks_basic_mutable_string& substitute_n(ELEM old_ch, const ELEM new_ch, size_t n = -1) {
+		this->do_substitute_n(__to_basic_string_view(&old_ch, 1), __to_basic_string_view(&new_ch, 1), n, true);
 		return *this;
 	}
 
@@ -472,6 +482,11 @@ namespace std {
 	};
 }
 
+
+template <class ELEM>
+std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_mutable_string<ELEM>& str) {
+	return strm << str.view();
+}
 
 template <class ELEM>
 std::basic_istream<ELEM, std::char_traits<ELEM>>& operator>>(std::basic_istream<ELEM, std::char_traits<ELEM>>& strm, ks_basic_mutable_string<ELEM>& str) {

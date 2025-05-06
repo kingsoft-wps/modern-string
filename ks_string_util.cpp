@@ -13,10 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "base.h"
 #include "ks_string_util.h"
 
 namespace ks_string_util {
 	//icase compare ...
+	MODERN_STRING_INLINE_API
 	template <class ELEM> 
 	static int __do_icase_compare(const ks_basic_string_view<ELEM>& left, const ks_basic_string_view<ELEM>& right) {
 		const ELEM* left_data = left.data();
@@ -55,6 +57,7 @@ namespace ks_string_util {
 		return diff;
 	}
 
+	MODERN_STRING_INLINE_API
 	template <class ELEM> 
 	static bool __do_icase_equals(const ks_basic_string_view<ELEM>& left, const ks_basic_string_view<ELEM>& right) {
 		return left.length() == right.length()

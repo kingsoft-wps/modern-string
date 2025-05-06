@@ -20,7 +20,7 @@ limitations under the License.
 
 
 template <class ELEM>
-class ks_basic_string_allocator {
+class MODERN_STRING_INLINE_API ks_basic_string_allocator {
 public:
     using size_type = size_t;
     using difference_type = ptrdiff_t;
@@ -54,7 +54,7 @@ public:
         ASSERT(addr % 4 == 0);
         addr += _header_size();
         *(uint32_t*)_get_space32_p((ELEM*)(addr)) = uint32_t(_Count);
-        ASSERT((*(uint32_t*)_get_refcount32_p((ELEM*)(addr)) = 0, true));
+        *(uint32_t*)_get_refcount32_p((ELEM*)(addr)) = 1;
         return (ELEM*)(addr);
     }
 
@@ -64,8 +64,10 @@ public:
 
     static void deallocate(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
-        ASSERT(_get_refcount32_value(_Ptr) == 0);
-        free((void*)(uintptr_t(_Ptr) - _header_size()));
+        ASSERT(_get_refcount32_value(_Ptr) >= 1);
+        if (--(*(std::atomic<uint32_t>*)_get_refcount32_p(_Ptr)) == 0) {
+            free((void*)(uintptr_t(_Ptr) - _header_size()));
+        }
     }
 
     static void deallocate(ELEM* _Ptr, size_t _Count) {
@@ -75,10 +77,7 @@ public:
     }
 
     static ELEM* _atomic_alloc(size_t _Count) {
-        ELEM* p = allocate(_Count);
-        ASSERT(p != nullptr);
-        *(volatile uint32_t*)_get_refcount32_p(p) = 1;
-        return p;
+        return allocate(_Count);
     }
 
     static void _atomic_addref(ELEM* _Ptr) {
@@ -88,10 +87,7 @@ public:
     }
 
     static void _atomic_release(ELEM* _Ptr) {
-        ASSERT(_Ptr != nullptr);
-        ASSERT(_get_refcount32_value(_Ptr) >= 1);
-        if (--(*(std::atomic<uint32_t>*)_get_refcount32_p(_Ptr)) == 0) 
-            deallocate(_Ptr);
+        deallocate(_Ptr);
     }
 
     template <class _Objty, class... _Types> 

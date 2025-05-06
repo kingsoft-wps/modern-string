@@ -16,11 +16,11 @@ limitations under the License.
 #pragma once
 
 #include "base.h"
-#include "ks_basic_xmutable_string_base.inl"
+#include "ks_basic_xmutable_string_base.h"
 
 
 template <class ELEM>
-class ks_basic_immutable_string : public ks_basic_xmutable_string_base<ELEM> {
+class MODERN_STRING_API ks_basic_immutable_string : public ks_basic_xmutable_string_base<ELEM> {
 	using __my_string_base = ks_basic_xmutable_string_base<ELEM>;
 	using __my_string_base::__to_basic_string_view;
 
@@ -71,15 +71,15 @@ public:
 
 	//copy & move ctor (from std::basic_string)
 	template <class AllocType>
-	ks_basic_immutable_string(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) 
+	ks_basic_immutable_string(const std::basic_string<ELEM, ks_char_traits<ELEM>, AllocType>& str) 
 		: __my_string_base(__to_basic_string_view(str)) {}
 	template <class AllocType>
-	ks_basic_immutable_string(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str, size_t offset, size_t count = -1)
+	ks_basic_immutable_string(const std::basic_string<ELEM, ks_char_traits<ELEM>, AllocType>& str, size_t offset, size_t count = -1)
 		: __my_string_base(__to_basic_string_view(str, offset, count)) {}
 
-	ks_basic_immutable_string(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref) 
+	ks_basic_immutable_string(std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref)
 		: __my_string_base(std::move(str_rvref)) {}
-	ks_basic_immutable_string(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref, size_t offset, size_t count = -1)
+	ks_basic_immutable_string(std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref, size_t offset, size_t count = -1)
 		: __my_string_base(__my_string_base(std::move(str_rvref)).substr(offset, count)) {}
 
 public:
@@ -158,4 +158,9 @@ namespace std {
 	template <class ELEM>
 	struct hash<ks_basic_immutable_string<ELEM>> : hash<ks_basic_xmutable_string_base<ELEM>> {
 	};
+}
+
+template <class ELEM>
+std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_immutable_string<ELEM>& str) {
+	return strm << str.view();
 }

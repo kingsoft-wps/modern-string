@@ -21,11 +21,19 @@ limitations under the License.
 #include "ks_type_traits.h"
 
 using uint = unsigned int;
-using char8_t = unsigned char; //needed until c++20
-using WCHAR = std::conditional<sizeof(wchar_t) == 2, wchar_t, unsigned short>::type;
 
-// #ifndef __X
-// #   define __X(str)   ((const WCHAR*)(u##str))
+#ifdef _WIN32
+using WCHAR = wchar_t;
+#else
+using WCHAR = unsigned short;
+#endif
+
+#if __cplusplus < 202002L
+using char8_t = unsigned char; //needed until c++20
+#endif
+
+// #ifndef __Xs
+// #   define __Xs(str)  ((const WCHAR*)(u##str))
 // #endif
 // #ifndef __Xc
 // #   define __Xc(ch)   ((WCHAR)(u##ch))
@@ -38,19 +46,21 @@ using WCHAR = std::conditional<sizeof(wchar_t) == 2, wchar_t, unsigned short>::t
 #	endif
 #endif
 
-
-#ifndef ASSERT
+#ifndef _ASSERT
 #	ifdef _DEBUG
 #		if defined(_MSC_VER)
 #			include <crtdbg.h>
-#			define ASSERT _ASSERT
 #		else
 #			include <assert.h>
-#			define ASSERT assert
+#			define _ASSERT(x)  assert(x)
 #		endif
 #	else
-#		define ASSERT(x)  ((void)(0))
+#			define _ASSERT(x)  ((void)(0))
 #	endif
+#endif
+
+#ifndef ASSERT
+#	define ASSERT(x)  _ASSERT(x)
 #endif
 
 
@@ -75,11 +85,14 @@ using WCHAR = std::conditional<sizeof(wchar_t) == 2, wchar_t, unsigned short>::t
 #endif
 
 
-//MODERN_STRING_API定义
 //#ifdef MODERN_STRING_EXPORTS
 //#    define MODERN_STRING_API _DECL_EXPORT
+//#    define MODERN_STRING_INLINE_API
 //#else
 //#    define MODERN_STRING_API _DECL_IMPORT
+//#    define MODERN_STRING_INLINE_API
 //#endif
 
+//the modern-string is a STATIC libaray...
 #define MODERN_STRING_API 
+#define MODERN_STRING_INLINE_API
