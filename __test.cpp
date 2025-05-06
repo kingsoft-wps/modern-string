@@ -129,16 +129,21 @@ int main() {
     std::cout << "to-string true: " << ks_string_util::to_string(true) << "\n";
 
 #ifdef _WIN32
-    std::wcout << "convert utf8: " << ks_string_util::wstring_from_utf8(ks_string_util::wstring_to_utf8((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
-    std::wcout << "convert utf32: " << ks_string_util::wstring_from_utf32(ks_string_util::wstring_to_utf32((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
-    std::wcout << "convert ansi: " << ks_string_util::wstring_from_ansi(ks_string_util::wstring_to_ansi((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
-    std::wcout << "convert wide: " << ks_string_util::wstring_from_wide(ks_string_util::wstring_to_wide((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
+    std::wcout << "convert utf8: " << ks_string_util::wstring_from_utf8(ks_string_util::wstring_to_std_u8string((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
+    std::wcout << "convert utf32: " << ks_string_util::wstring_from_utf32(ks_string_util::wstring_to_std_u32string((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
+    std::wcout << "convert ansi: " << ks_string_util::wstring_from_native_chars(ks_string_util::wstring_to_std_string((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
+    std::wcout << "convert wide: " << ks_string_util::wstring_from_native_wchars(ks_string_util::wstring_to_std_wstring((WCHAR*)u"大家好呀呀").c_str(), -1) << "\n";
+#else
+    std::cout << "convert utf8: " << ks_string_util::wstring_to_std_string(ks_string_util::wstring_from_utf8(ks_string_util::wstring_to_std_u8string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
+    std::cout << "convert utf32: " << ks_string_util::wstring_to_std_string(ks_string_util::wstring_from_utf32(ks_string_util::wstring_to_std_u32string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
+    std::cout << "convert ansi: " << ks_string_util::wstring_to_std_string(ks_string_util::wstring_from_native_chars(ks_string_util::wstring_to_std_string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
+    std::cout << "convert wide: " << ks_string_util::wstring_to_std_string(ks_string_util::wstring_from_native_wchars(ks_string_util::wstring_to_std_wstring((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
 #endif
 
-    ks_mutable_string ms10;
-    std::cout << "please input ms10: ";
-    std::cin >> ms10;
-    std::cout << "ms10: " << ms10 << "\n";
+    //ks_mutable_string ms10;
+    //std::cout << "please input ms10: ";
+    //std::cin >> ms10;
+    //std::cout << "ms10: " << ms10 << "\n";
 
     std::cout << "Hello World!\n";
     return 0;

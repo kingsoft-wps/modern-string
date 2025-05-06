@@ -110,7 +110,7 @@ public:
 
 	template <class RIGHT, class _ = std::enable_if_t<std::is_convertible_v<RIGHT, ks_basic_string_view<ELEM>>>>
 	ks_basic_mutable_string& assign(RIGHT&& right) {
-		//if right is a xmutable-string，do assign directly, so this will ref right.data
+		//if right is a xmutable-string, do assign directly, so this will ref right.data
 		if (std::is_base_of_v<ks_basic_xmutable_string_base<ELEM>, std::remove_cv_t<std::remove_reference_t<RIGHT>>>)
 			*this = ks_basic_mutable_string(std::forward<RIGHT>(right));
 		else if (std::is_same_v<RIGHT, std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&&>)
@@ -121,7 +121,7 @@ public:
 	}
 	template <class RIGHT, class _ = std::enable_if_t<std::is_convertible_v<RIGHT, ks_basic_string_view<ELEM>>>>
 	ks_basic_mutable_string& assign(RIGHT&& right, size_t offset, size_t count = -1) {
-		//if right is a xmutable-string，do assign directly, so this will ref right.data
+		//if right is a xmutable-string, do assign directly, so this will ref right.data
 		if (std::is_base_of_v<ks_basic_xmutable_string_base<ELEM>, std::remove_cv_t<std::remove_reference_t<RIGHT>>>)
 			*this = ks_basic_mutable_string(std::forward<RIGHT>(right), offset, count);
 		else if (std::is_same_v<RIGHT, std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&&>)
@@ -363,12 +363,12 @@ public:
 	//resize & reserve
 	void resize(size_t count, ELEM ch = ELEM{}) {
 		this->do_resize(count, ch, true, true);
-		this->do_ensure_exclusive(); //for compatibility，ensure  exclusive！
+		this->do_ensure_exclusive(); //for compatibility, ensure exclusive！
 	}
 
 	void reserve(size_t capa) {
 		this->do_reserve(capa);
-		this->do_ensure_exclusive(); //for compatibility，ensure  exclusive！
+		this->do_ensure_exclusive(); //for compatibility, ensure exclusive！
 	}
 
 	//exclusive

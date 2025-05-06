@@ -73,9 +73,9 @@ namespace ks_string_util {
 
 	template <class T>
 	ks_immutable_wstring to_wstring(const T& v) {
-		extern ks_immutable_wstring wstring_from_wide(const wchar_t* p, size_t len);
+		extern ks_immutable_wstring wstring_from_native_wchars(const wchar_t* p, size_t len);
 		std::wstring std_wstr = std::to_wstring(v);
-		return wstring_from_wide(std_wstr.data(), std_wstr.length());
+		return wstring_from_native_wchars(std_wstr.data(), std_wstr.length());
 	}
 
 	//stringize (specialization for bool) ...

@@ -414,7 +414,7 @@ private:
 	static constexpr uint8_t _REF_MODE = 1;
 
 	static constexpr size_t _MODE_BITS = 1;
-	static constexpr size_t _FIX_DATA_SIZE = std::max(size_t(sizeof(ELEM) <= 2 ? 16 : 24), (sizeof(ELEM) * 2) / 8 * 8); //use 32 is good also, and std::basic_string uses just 32，but we use smaller size for mem-compact
+	static constexpr size_t _FIX_DATA_SIZE = std::max(size_t(sizeof(ELEM) <= 2 ? 16 : 24), (sizeof(ELEM) * 2) / 8 * 8); //use 32 is good also, and std::basic_string uses just 32, but we use smaller size for mem-compact
 	static constexpr size_t _SSO_BUFFER_SPACE = ((_FIX_DATA_SIZE - 2) / sizeof(ELEM)); //why sub 2? see also _SSO_STRUCT
 	static constexpr size_t _STR_LENGTH_LIMIT = 0x7FFFFFFF; //due to _REF_STRUCT::offset32 is 31 bits actually, so the max len is defined as here
 	static_assert(_SSO_BUFFER_SPACE != 0, "sso-buffer-space must not be 0");
