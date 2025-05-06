@@ -99,10 +99,10 @@ size_t ks_basic_string_view<ELEM>::do_find(const ks_basic_string_view<ELEM>& str
 	const ELEM* cur_p = this_data + pos;
 	const ELEM* end_p = this_data + this_length - right_length + 1;
 	while (cur_p < end_p) {
-		cur_p = std::char_traits<ELEM>::find(cur_p, end_p - cur_p, right_data[0]);
+		cur_p = ks_char_traits<ELEM>::find(cur_p, end_p - cur_p, right_data[0]);
 		if (cur_p == nullptr)
 			return size_t(-1);
-		if (right_length == 1 || cur_p == right_data || std::char_traits<ELEM>::compare(cur_p + 1, right_data + 1, right_length - 1) == 0)
+		if (right_length == 1 || cur_p == right_data || ks_char_traits<ELEM>::compare(cur_p + 1, right_data + 1, right_length - 1) == 0)
 			return cur_p - this_data;
 		++cur_p;
 	}
@@ -125,7 +125,7 @@ size_t ks_basic_string_view<ELEM>::do_rfind(const ks_basic_string_view<ELEM>& st
 	const ELEM  right_first_ch = right_data[0];
 	for (; cur_p >= this_data; --cur_p) {
 		if (*cur_p == right_first_ch) {
-			if (right_length == 1 || cur_p == right_data || std::char_traits<ELEM>::compare(cur_p + 1, right_data + 1, right_length - 1) == 0)
+			if (right_length == 1 || cur_p == right_data || ks_char_traits<ELEM>::compare(cur_p + 1, right_data + 1, right_length - 1) == 0)
 				return cur_p - this_data;
 		}
 	}
@@ -149,7 +149,7 @@ size_t ks_basic_string_view<ELEM>::do_find_first_of(const ks_basic_string_view<E
 	const ELEM* right_data = str_view.data();
 	const ELEM* cur_p = this_data + pos;
 	for (; cur_p < this_data_end; ++cur_p) {
-		bool found = std::char_traits<ELEM>::find(right_data, right_length, *cur_p) != nullptr;
+		bool found = ks_char_traits<ELEM>::find(right_data, right_length, *cur_p) != nullptr;
 		if (!found == not_mode)
 			return cur_p - this_data;
 	}
@@ -172,7 +172,7 @@ size_t ks_basic_string_view<ELEM>::do_find_last_of(const ks_basic_string_view<EL
 	const ELEM* right_data = str_view.data();
 	const ELEM* cur_p = this_data + pos;
 	for (; cur_p >= this_data; --cur_p) {
-		bool found = std::char_traits<ELEM>::find(right_data, right_length, *cur_p) != nullptr;
+		bool found = ks_char_traits<ELEM>::find(right_data, right_length, *cur_p) != nullptr;
 		if (!found == not_mode)
 			return cur_p - this_data;
 	}

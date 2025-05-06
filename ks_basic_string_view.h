@@ -149,7 +149,7 @@ protected:
 		const ELEM* right_data = right.data();
 		size_t left_length = this->length();
 		size_t right_length = right.length();
-		int diff = left_data == right_data ? 0 : std::char_traits<ELEM>::compare(left_data, right_data, std::min(left_length, right_length));
+		int diff = left_data == right_data ? 0 : ks_char_traits<ELEM>::compare(left_data, right_data, std::min(left_length, right_length));
 		if (diff == 0 && left_length != right_length)
 			diff = left_length < right_length ? -1 : +1;
 		return diff;
