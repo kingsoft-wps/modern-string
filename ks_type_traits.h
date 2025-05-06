@@ -117,20 +117,23 @@ namespace std {
 #define __KS_CHAR_TRAITS_DEF
 #include <string>
 
-template <class ELEM, class UNDERLYING_ELEM>
+template <
+	class ELEM, class UNDERLYING_ELEM, 
+	class INT_TYPE = typename std::char_traits<UNDERLYING_ELEM>::int_type, 
+	class STATE_TYPE = typename std::char_traits<UNDERLYING_ELEM>::state_type>
 class __ks_underlying_char_traits {
 	using __underlying_char_type = UNDERLYING_ELEM;
-	using __underlying_char_traits = std::char_traits<UNDERLYING_ELEM>;
-    static_assert(sizeof(UNDERLYING_ELEM) == sizeof(ELEM), "the size of ELEM and UNDERLYING_ELEM should be equal to 2");
+	using __underlying_std_char_traits = std::char_traits<UNDERLYING_ELEM>;
+    static_assert(sizeof(UNDERLYING_ELEM) == sizeof(ELEM), "the size of ELEM and UNDERLYING_ELEM should be equal");
 
 public:
     using char_type = ELEM;
-	using int_type = typename __underlying_char_traits::int_type;
-	using pos_type = typename __underlying_char_traits::pos_type;
-    using off_type = typename __underlying_char_traits::off_type;
-    using state_type = typename __underlying_char_traits::state_type;
+	using int_type = INT_TYPE;
+	using pos_type = typename __underlying_std_char_traits::pos_type;
+    using off_type = typename __underlying_std_char_traits::off_type;
+    using state_type = STATE_TYPE;
 #if __cplusplus >= 202002L
-	using comparison_category = typename __underlying_char_traits::comparison_category;
+	using comparison_category = typename __underlying_std_char_traits::comparison_category;
 #endif
 
 public:
@@ -152,10 +155,10 @@ public:
     }
 
 	static constexpr int_type not_eof(int_type _Meta) noexcept {
-        return __underlying_char_traits::not_eof(_Meta);
+        return __underlying_std_char_traits::not_eof(_Meta);
     }
     static constexpr int_type eof() noexcept {
-        return __underlying_char_traits::eof();
+        return __underlying_std_char_traits::eof();
     }
 
 	static constexpr size_t length(const char_type* _First) noexcept {
@@ -170,26 +173,26 @@ public:
 			return 0;
 		}
 #else
-		return __underlying_char_traits::length((const __underlying_char_type*)_First);
+		return __underlying_std_char_traits::length((const __underlying_char_type*)_First);
 #endif
 	}
 
 	static int compare(const char_type* _First1, const char_type* _First2, size_t _Count) {
-		return __underlying_char_traits::compare((const __underlying_char_type*)_First1, (const __underlying_char_type*)_First2, _Count);
+		return __underlying_std_char_traits::compare((const __underlying_char_type*)_First1, (const __underlying_char_type*)_First2, _Count);
 	}
 	static const char_type* find(const char_type* _First, size_t _Count, char_type _Ch) {
-		return (const char_type*)__underlying_char_traits::find((const __underlying_char_type*)_First, _Count, _Ch);
+		return (const char_type*)__underlying_std_char_traits::find((const __underlying_char_type*)_First, _Count, _Ch);
 	}
 
 	static char_type* copy(char_type* dest, const char_type* src, std::size_t count) {
-		return (char_type*)__underlying_char_traits::copy((__underlying_char_type*)dest, (const __underlying_char_type*)src, count);
+		return (char_type*)__underlying_std_char_traits::copy((__underlying_char_type*)dest, (const __underlying_char_type*)src, count);
 	}
 	static char_type* move(char_type* dest, const char_type* src, std::size_t count) {
-		return (char_type*)__underlying_char_traits::move((__underlying_char_type*)dest, (const __underlying_char_type*)src, count);
+		return (char_type*)__underlying_std_char_traits::move((__underlying_char_type*)dest, (const __underlying_char_type*)src, count);
 	}
 
 	static char_type* assign(char_type* _First, size_t _Count, char_type _Ch) {
-		return (char_type*)__underlying_char_traits::assign((__underlying_char_type*)_First, _Count, _Ch);
+		return (char_type*)__underlying_std_char_traits::assign((__underlying_char_type*)_First, _Count, _Ch);
 	}
 	static void assign(char_type& _Left, const char_type& _Right) {
 		_Left = _Right;
@@ -199,7 +202,7 @@ public:
 template <class ELEM> class ks_char_traits : public __ks_underlying_char_traits<ELEM, ELEM> {};
 
 #if __cplusplus < 202002L
-template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, unsigned char> {};
+template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, unsigned char, uint8_t, std::mbstate_t> {};
 #else
 template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, char8_t> {};
 #endif
