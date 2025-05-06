@@ -202,7 +202,7 @@ public:
 template <class ELEM> class ks_char_traits : public __ks_underlying_char_traits<ELEM, ELEM> {};
 
 #if __cplusplus < 202002L
-template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, unsigned char, uint8_t, std::mbstate_t> {};
+template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, char, uint8_t, std::mbstate_t> {};
 #else
 template <> class ks_char_traits<uint8_t> : public __ks_underlying_char_traits<uint8_t, char8_t> {};
 #endif
