@@ -50,10 +50,12 @@ set(PUBLIC_HEADER_FILES
 	ks_basic_mutable_string.h
 	ks_basic_immutable_string.h
 	ks_basic_xmutable_string_base.h
+	ks_basic_xmutable_string_base.inl
 	ks_basic_string_allocator.h
 	#about string-view
 	ks_string_view.h
 	ks_basic_string_view.h
+	ks_basic_string_view.inl
 	#about string-util
 	ks_string_util.h
 	ks_string_util.inl
