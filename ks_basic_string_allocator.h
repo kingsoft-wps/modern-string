@@ -125,7 +125,7 @@ public:
     }
 
     static constexpr uint32_t _get_refcount32_value(ELEM* p) {
-        return (*(std::atomic<uint32_t>*)__get_refcount32_p(p)).load(std::memory_order_acquire);
+        return (*(std::atomic<uint32_t>*)__get_refcount32_p(p)).load(std::memory_order_relaxed);
     }
 
 private:
