@@ -20,29 +20,29 @@ limitations under the License.
 namespace ks_string_util {
 	//convert from ...
 	MODERN_STRING_API
-	ks_immutable_wstring wstring_from_utf8(const char8_t* p, size_t len);
+	ks_immutable_wstring wstring_from_u8_chars(const char8_t* p, size_t len);
 	MODERN_STRING_API
-	ks_immutable_wstring __wstring_from_utf16(const char16_t* p, size_t len); //you can use ks_immutable_wstring(p, len) directly
+	ks_immutable_wstring wstring_from_u16_chars(const char16_t* p, size_t len); //you can use ks_immutable_wstring(p, len) directly, also
 	MODERN_STRING_API
-	ks_immutable_wstring wstring_from_utf32(const char32_t* p, size_t len);
+	ks_immutable_wstring wstring_from_u32_chars(const char32_t* p, size_t len);
 
 	MODERN_STRING_API
 	ks_immutable_wstring wstring_from_native_chars(const char* p, size_t len);
 	MODERN_STRING_API
-	ks_immutable_wstring wstring_from_native_wchars(const wchar_t* p, size_t len);
+	ks_immutable_wstring wstring_from_native_wide_chars(const wchar_t* p, size_t len);
 
 	//convert to ...
 	MODERN_STRING_API
-	std::basic_string<char8_t> wstring_to_std_u8string(const ks_wstring_view& str_view);
+	std::basic_string<char8_t> wstring_to_std_u8_string(const ks_wstring_view& str_view);
 	MODERN_STRING_API
-	std::basic_string<char16_t> __wstring_to_std_u16string(const ks_wstring_view& str_view); //you can use str.data() and str.length() directly
+	std::basic_string<char16_t> wstring_to_std_u16_string(const ks_wstring_view& str_view); //you can use str.data() and str.length() directly, also
 	MODERN_STRING_API
-	std::basic_string<char32_t> wstring_to_std_u32string(const ks_wstring_view& str_view);
+	std::basic_string<char32_t> wstring_to_std_u32_string(const ks_wstring_view& str_view);
 
 	MODERN_STRING_API
-	std::string wstring_to_std_string(const ks_wstring_view& str_view);
+	std::string wstring_to_std_native_string(const ks_wstring_view& str_view);
 	MODERN_STRING_API
-	std::wstring wstring_to_std_wstring(const ks_wstring_view& str_view);
+	std::wstring wstring_to_std_native_wide_string(const ks_wstring_view& str_view);
 
 	MODERN_STRING_API
 	char32_t __take_next_rune(const ks_wstring_view& str_view, size_t* pos);

@@ -27,7 +27,7 @@ limitations under the License.
 namespace ks_string_util {
 	//convert from ...
 	MODERN_STRING_API
-	ks_immutable_wstring wstring_from_utf8(const char8_t* p, size_t len) {
+	ks_immutable_wstring wstring_from_u8_chars(const char8_t* p, size_t len) {
 		ks_basic_string_view<uint8_t> str_view8((const uint8_t*)p, len);
 		if (str_view8.empty())
 			return ks_immutable_wstring();
@@ -38,7 +38,7 @@ namespace ks_string_util {
 		//note：we do not use wstring_convert, but implement utf8 converting ourselves.
 		//std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> std_converter;
 		//std::basic_string<char16_t> std_str16 = std_converter.from_bytes(str_view.data(), str_view.data() + str_view.length());
-		//return __wstring_from_utf16(std_str16.data(), std_str16.length());
+		//return wstring_from_u16_chars(std_str16.data(), std_str16.length());
 
 		size_t wch_count = str_length8;
 		for (size_t pos8 = 0; pos8 < str_length8; ) {
@@ -128,12 +128,12 @@ namespace ks_string_util {
 	}
 
 	MODERN_STRING_API
-	ks_immutable_wstring __wstring_from_utf16(const char16_t* p, size_t len) {
+	ks_immutable_wstring wstring_from_u16_chars(const char16_t* p, size_t len) {
 		return ks_immutable_wstring((const WCHAR*)p, len);
 	}
 
 	MODERN_STRING_API
-	ks_immutable_wstring wstring_from_utf32(const char32_t* p, size_t len) {
+	ks_immutable_wstring wstring_from_u32_chars(const char32_t* p, size_t len) {
 		ks_basic_string_view<uint32_t> str_view32((const uint32_t*)p, len);
 		if (str_view32.empty())
 			return ks_immutable_wstring();
@@ -170,7 +170,7 @@ namespace ks_string_util {
 #ifdef _WIN32
 		UINT acp = ::GetACP();
 		if (acp == 65001) {
-			return wstring_from_utf8((const char8_t*)p, len);
+			return wstring_from_u8_chars((const char8_t*)p, len);
 		}
 
 		if (acp == 936 || acp == 20936)
@@ -196,7 +196,7 @@ namespace ks_string_util {
 
 		if (loc_name_str_up.empty() || loc_name_str_up == "C" || loc_name_str_up == "POSIX" || 
 			ks_string_view(loc_name_str_up).ends_with(".UTF-8") || ks_string_view(loc_name_str_up).ends_with(".UTF8")) {
-			return wstring_from_utf8((const char8_t*)p, len);
+			return wstring_from_u8_chars((const char8_t*)p, len);
 		}
 
 		using codecvt_by_loc_t = struct codecvt_byname_facet : std::codecvt_byname<wchar_t, char, std::mbstate_t> { using std::codecvt_byname<wchar_t, char, std::mbstate_t>::codecvt_byname; };
@@ -210,24 +210,24 @@ namespace ks_string_util {
 			using std_converter_t = std::wstring_convert<codecvt_by_loc_t, wchar_t>;
 			std_converter_t std_converter(new codecvt_by_loc_t(loc_name_str.c_str()));
 			auto std_wstr = std_converter.from_bytes(str_view.data(), str_view.data() + str_view.length());
-			return wstring_from_native_wchars(std_wstr.data(), std_wstr.length());
+			return wstring_from_native_wide_chars(std_wstr.data(), std_wstr.length());
 		}
 #endif
 	}
 
 	MODERN_STRING_API
-	ks_immutable_wstring wstring_from_native_wchars(const wchar_t* p, size_t len) {
+	ks_immutable_wstring wstring_from_native_wide_chars(const wchar_t* p, size_t len) {
 		static_assert(sizeof(wchar_t) == 2 || sizeof(wchar_t) == 4, "the size of wchar_t must be 2 or 4");
 		if (sizeof(wchar_t) == 2)
-			return __wstring_from_utf16((const char16_t*)p, len);
+			return wstring_from_u16_chars((const char16_t*)p, len);
 		else
-			return wstring_from_utf32((const char32_t*)p, len);
+			return wstring_from_u32_chars((const char32_t*)p, len);
 	}
 
 
 	//convert to ...
 	MODERN_STRING_API
-	std::basic_string<char8_t> wstring_to_std_u8string(const ks_wstring_view& str_view) {
+	std::basic_string<char8_t> wstring_to_std_u8_string(const ks_wstring_view& str_view) {
 		if (str_view.empty())
 			return std::basic_string<char8_t>();
 
@@ -297,12 +297,12 @@ namespace ks_string_util {
 	}
 
 	MODERN_STRING_API
-	std::basic_string<char16_t> __wstring_to_std_u16string(const ks_wstring_view& str_view) {
+	std::basic_string<char16_t> wstring_to_std_u16_string(const ks_wstring_view& str_view) {
 		return std::basic_string<char16_t>((char16_t*)str_view.data(), str_view.length());
 	}
 
 	MODERN_STRING_API
-	std::basic_string<char32_t> wstring_to_std_u32string(const ks_wstring_view& str_view) {
+	std::basic_string<char32_t> wstring_to_std_u32_string(const ks_wstring_view& str_view) {
 		if (str_view.empty())
 			return std::basic_string<char32_t>();
 
@@ -343,14 +343,14 @@ namespace ks_string_util {
 	}
 
 	MODERN_STRING_API
-	std::string wstring_to_std_string(const ks_wstring_view& str_view) {
+	std::string wstring_to_std_native_string(const ks_wstring_view& str_view) {
 		if (str_view.empty())
 			return std::string();
 
 #ifdef _WIN32
 		UINT acp = ::GetACP();
 		if (acp == 65001) {
-			std::basic_string<char8_t> str8 = wstring_to_std_u8string(str_view);
+			std::basic_string<char8_t> str8 = wstring_to_std_u8_string(str_view);
 			return std::move((std::string&)(str8));
 		}
 
@@ -378,7 +378,7 @@ namespace ks_string_util {
 
 		if (loc_name_str_up.empty() || loc_name_str_up == "C" || loc_name_str_up == "POSIX" || 
 			ks_string_view(loc_name_str_up).ends_with(".UTF-8") || ks_string_view(loc_name_str_up).ends_with(".UTF8")) {
-			std::basic_string<char8_t> str8 = wstring_to_std_u8string(str_view);
+			std::basic_string<char8_t> str8 = wstring_to_std_u8_string(str_view);
 			return std::move((std::string&)(str8));
 		}
 
@@ -389,21 +389,21 @@ namespace ks_string_util {
 			return std_converter.to_bytes((wchar_t*)str_view.data(), (wchar_t*)str_view.data() + str_view.length());
 		}
 		else {
-			std::wstring std_wstr = wstring_to_std_wstring(str_view);
+			std::wstring std_wstr = wstring_to_std_native_wide_string(str_view);
 			return std_converter.to_bytes(std_wstr.data(), std_wstr.data() + std_wstr.length());
 		}
 #endif
 	}
 
 	MODERN_STRING_API
-	std::wstring wstring_to_std_wstring(const ks_wstring_view & str_view) {
+	std::wstring wstring_to_std_native_wide_string(const ks_wstring_view & str_view) {
 		static_assert(sizeof(wchar_t) == 2 || sizeof(wchar_t) == 4, "the size of wchar_t must be 2 or 4");
 		if (sizeof(wchar_t) == 2) {
-			std::basic_string<char16_t> str16 = __wstring_to_std_u16string(str_view);
+			std::basic_string<char16_t> str16 = wstring_to_std_u16_string(str_view);
 			return std::move((std::wstring&)(str16));
 		}
 		else {
-			std::basic_string<char32_t> str32 = wstring_to_std_u32string(str_view);
+			std::basic_string<char32_t> str32 = wstring_to_std_u32_string(str_view);
 			return std::move((std::wstring&)(str32));
 		}
 	}
