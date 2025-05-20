@@ -103,19 +103,19 @@ public:
     static void _atomic_initref(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
         ASSERT(_get_refcount32_value(_Ptr) == 0);
-        *(volatile uint32_t*)__get_refcount32_p((ELEM*)(_Ptr)) = 1;
+        (*(uint32_t*)__get_refcount32_p(_Ptr)) = 1;
     }
 
     static void _atomic_addref(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
         ASSERT(_get_refcount32_value(_Ptr) >= 1);
-        ++(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr));
+        (*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_add(1, std::memory_order_relaxed);
     }
 
     static void _atomic_release(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
         ASSERT(_get_refcount32_value(_Ptr) >= 1);
-        if (--(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)) == 0) {
+        if ((*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_sub(1, std::memory_order_acq_rel) == 1) {
             deallocate(_Ptr);
         }
     }
@@ -125,7 +125,7 @@ public:
     }
 
     static constexpr uint32_t _get_refcount32_value(ELEM* p) {
-        return *(volatile uint32_t*)__get_refcount32_p(p);
+        return (*(std::atomic<uint32_t>*)__get_refcount32_p(p)).load(std::memory_order_acquire);
     }
 
 private:
