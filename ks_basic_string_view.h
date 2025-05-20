@@ -63,8 +63,8 @@ public:
 		: m_p(str.data()), m_length(str.length()) {}
 
 	//implicit ctor (from std::basic_string, needed until c++17)
-	template <class AllocType>
-	ks_basic_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) 
+	template <class CharTraits, class AllocType>
+	ks_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) 
 		: m_p(str.data()), m_length(str.length()) {}
 
 public:
@@ -276,10 +276,10 @@ protected:
 	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) { return str.view(); }
 	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str, size_t offset, size_t count) { return str.view().substr(offset, count); }
 
-	template <class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) { return ks_basic_string_view<ELEM>(str.data(), str.length()); }
-	template <class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>(str.data(), str.length()).substr(offset, count); }
+	template <class CharTraits, class AllocType>
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) { return ks_basic_string_view<ELEM>(str.data(), str.length()); }
+	template <class CharTraits, class AllocType>
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>(str.data(), str.length()).substr(offset, count); }
 
 	friend class ks_basic_xmutable_string_base<ELEM>;
 };

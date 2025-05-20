@@ -469,10 +469,10 @@ protected:
 	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
 	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
 
-	template <class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
-	template <class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
+	template <class CharTraits, class AllocType>
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
+	template <class CharTraits, class AllocType>
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
 
 	friend class ks_basic_mutable_string<ELEM>;
 	friend class ks_basic_immutable_string<ELEM>;

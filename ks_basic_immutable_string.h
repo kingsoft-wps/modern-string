@@ -70,11 +70,11 @@ public:
 		: __my_string_base(other.do_detach().do_substr(offset, count)) { ASSERT(other.is_detached_empty()); }
 
 	//copy & move ctor (from std::basic_string)
-	template <class AllocType>
-	ks_basic_immutable_string(const std::basic_string<ELEM, ks_char_traits<ELEM>, AllocType>& str) 
+	template <class CharTraits, class AllocType>
+	ks_basic_immutable_string(const std::basic_string<ELEM, CharTraits, AllocType>& str) 
 		: __my_string_base(__to_basic_string_view(str)) {}
-	template <class AllocType>
-	ks_basic_immutable_string(const std::basic_string<ELEM, ks_char_traits<ELEM>, AllocType>& str, size_t offset, size_t count = -1)
+	template <class CharTraits, class AllocType>
+	ks_basic_immutable_string(const std::basic_string<ELEM, CharTraits, AllocType>& str, size_t offset, size_t count = -1)
 		: __my_string_base(__to_basic_string_view(str, offset, count)) {}
 
 	ks_basic_immutable_string(std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref)
