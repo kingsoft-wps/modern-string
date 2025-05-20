@@ -22,22 +22,32 @@ limitations under the License.
 
 using uint = unsigned int;
 
-#ifdef _WIN32
-using WCHAR = wchar_t;
-#else
-using WCHAR = unsigned short;
-#endif
-
 #if __cplusplus < 202002L
 using char8_t = unsigned char; //needed until c++20
 #endif
 
-// #ifndef __Xs
-// #   define __Xs(str)  ((const WCHAR*)(u##str))
-// #endif
-// #ifndef __Xc
-// #   define __Xc(ch)   ((WCHAR)(u##ch))
-// #endif
+#ifdef _WIN32
+using WCHAR = wchar_t;
+#else
+using WCHAR = unsigned short;  //prefer char16_t
+#endif
+
+
+//#ifndef __Xs
+//#   ifdef _WIN32
+//#       define __Xs(s)  (L##s)
+//#   else
+//#       define __Xs(s)  (static_cast<const WCHAR*>(static_cast<const void*>(u##s)))
+//#   endif
+//#endif
+//
+//#ifndef __Xc
+//#   ifdef _WIN32
+//#       define __Xc(c)  (L##c)
+//#   else
+//#       define __Xc(c)  (static_cast<const WCHAR>(u##c))
+//#   endif
+//#endif
 
 
 #ifndef _DEBUG
