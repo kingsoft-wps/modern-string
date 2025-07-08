@@ -29,7 +29,7 @@ using char8_t = unsigned char; //needed until c++20
 #ifdef _WIN32
 using WCHAR = wchar_t;
 #else
-using WCHAR = unsigned short;  //prefer char16_t
+using WCHAR = unsigned short;  //prefer char16_t than unsigned short
 #endif
 
 

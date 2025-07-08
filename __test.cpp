@@ -136,7 +136,7 @@ int main() {
 #else
     std::cout << "convert utf8: " << ks_string_util::wstring_to_std_native_string(ks_string_util::wstring_from_u8_chars(ks_string_util::wstring_to_std_u8_string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
     std::cout << "convert utf32: " << ks_string_util::wstring_to_std_native_string(ks_string_util::wstring_from_u32_chars(ks_string_util::wstring_to_std_u32_string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
-    std::cout << "convert ansi: " << ks_string_util::wstring_to_std_native_string(ks_string_util::wstring_from_native_chars(ks_string_util::wstring_to_std_string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
+    std::cout << "convert ansi: " << ks_string_util::wstring_to_std_native_string(ks_string_util::wstring_from_native_chars(ks_string_util::wstring_to_std_native_string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
     std::cout << "convert wide: " << ks_string_util::wstring_to_std_native_string(ks_string_util::wstring_from_native_wide_chars(ks_string_util::wstring_to_std_native_wide_string((WCHAR*)u"大家好呀呀").c_str(), -1)) << "\n";
 #endif
 

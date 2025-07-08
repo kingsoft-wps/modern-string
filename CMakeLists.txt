@@ -5,12 +5,21 @@ project(modern-string)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (CMAKE_COMPILER_IS_GNUCC)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden -fPIC")
-endif()
-if (CMAKE_COMPILER_IS_GNUCXX)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden -fPIC")
-endif()
+set(MY_GENERAL_COMPILE_OPTIONS
+		$<$<CXX_COMPILER_ID:MSVC>:
+			/permissive- /MP
+			/W3>
+			#/WX
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:
+			-fvisibility=hidden
+			-fvisibility-inlines-hidden
+			-fPIC
+			-Wall -Wextra
+			-Wshadow -Wpointer-arith
+			-Wno-deprecated-declarations
+			-Wno-unused-parameter>
+			#-Werror
+)
 
 
 set(MY_LIB_NAME modern-string)
@@ -73,10 +82,12 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${MY_SOURCE_FILES} __test.cp
 #static lib
 add_library(${MY_LIB_NAME} STATIC ${MY_SOURCE_FILES})
 target_compile_definitions(${MY_LIB_NAME} PRIVATE MODERN_STRING_EXPORTS)
+target_compile_options(${MY_LIB_NAME} PRIVATE ${MY_GENERAL_COMPILE_OPTIONS})
 
 #test exe
 if (MODERN_STRING_TEST_ENABLED)
 	add_executable(${MY_LIB_TEST_NAME} __test.cpp)
+	target_compile_options(${MY_LIB_TEST_NAME} PRIVATE ${MY_GENERAL_COMPILE_OPTIONS})
 	target_link_libraries(${MY_LIB_TEST_NAME} PRIVATE ${MY_LIB_NAME})
 endif()
 
