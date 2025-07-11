@@ -31,7 +31,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(const ks_basi
 		sso_ptr->buffer[count] = 0;
 	}
 	else {
-		ELEM* new_alloc_addr = ks_basic_string_allocator<ELEM>::_atomic_alloc(count + 1);
+		ELEM* new_alloc_addr = ks_basic_string_allocator<ELEM>::_refcountful_alloc(count + 1);
 		std::copy_n(p, count, new_alloc_addr);
 		new_alloc_addr[count] = 0;
 
@@ -56,7 +56,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(size_t count,
 		sso_ptr->buffer[count] = 0;
 	}
 	else {
-		ELEM* new_alloc_addr = ks_basic_string_allocator<ELEM>::_atomic_alloc(count + 1);
+		ELEM* new_alloc_addr = ks_basic_string_allocator<ELEM>::_refcountful_alloc(count + 1);
 		std::fill_n(new_alloc_addr, count, ch);
 		new_alloc_addr[count] = 0;
 
@@ -83,7 +83,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_st
 	else {
 		ASSERT(strdata_addr[str_rvref.length()] == 0); //should have end-ch0 already
 		ASSERT(strdata_addr[str_rvref.capacity()] == 0); //should have end-ch0 already
-		_atomic_initref(strdata_addr);
+		_refcountful_initref(strdata_addr);
 
 		auto* ref_ptr = _my_ref_ptr();
 		ref_ptr->mode = _REF_MODE;
@@ -99,7 +99,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_st
 template <class ELEM>
 void ks_basic_xmutable_string_base<ELEM>::do_ensure_exclusive() {
 	if (!this->is_exclusive()) {
-		ELEM* forked_alloc_addr = ks_basic_string_allocator<ELEM>::_atomic_alloc(this->capacity() + 1);
+		ELEM* forked_alloc_addr = ks_basic_string_allocator<ELEM>::_refcountful_alloc(this->capacity() + 1);
 		std::copy_n(this->data(), this->length(), forked_alloc_addr);
 		std::fill_n(forked_alloc_addr + this->length(), this->capacity() - this->length() + 1, 0);
 
@@ -142,7 +142,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_reserve(size_t capa) {
 			*this = ks_basic_xmutable_string_base(this->data(), this->length());
 		}
 		else {
-			ELEM* grown_alloc_addr = ks_basic_string_allocator<ELEM>::_atomic_alloc(new_capa + 1);
+			ELEM* grown_alloc_addr = ks_basic_string_allocator<ELEM>::_refcountful_alloc(new_capa + 1);
 			std::copy_n(this->data(), this->length(), grown_alloc_addr);
 			std::fill_n(grown_alloc_addr + this->length(), new_capa - this->length() + 1, 0);
 

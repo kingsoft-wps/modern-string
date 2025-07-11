@@ -64,7 +64,7 @@ public:
 		}
 		else {
 			*_my_ref_ptr() = *other._my_ref_ptr();
-			ks_basic_string_allocator<ELEM>::_atomic_addref(_my_ref_ptr()->alloc_addr());
+			ks_basic_string_allocator<ELEM>::_refcountful_addref(_my_ref_ptr()->alloc_addr());
 		}
 	}
 
@@ -89,7 +89,7 @@ public:
 				else {
 					this->~ks_basic_xmutable_string_base();
 					*_my_ref_ptr() = *other._my_ref_ptr();
-					ks_basic_string_allocator<ELEM>::_atomic_addref(_my_ref_ptr()->alloc_addr());
+					ks_basic_string_allocator<ELEM>::_refcountful_addref(_my_ref_ptr()->alloc_addr());
 				}
 			}
 		}
@@ -110,7 +110,7 @@ public:
 	//dtor
 	~ks_basic_xmutable_string_base() {
 		if (this->is_ref_mode()) {
-			ks_basic_string_allocator<ELEM>::_atomic_release(_my_ref_ptr()->alloc_addr());
+			ks_basic_string_allocator<ELEM>::_refcountful_release(_my_ref_ptr()->alloc_addr());
 		}
 	}
 
@@ -394,7 +394,7 @@ public:
 	}
 
 	bool is_exclusive() const {
-		return !(this->is_ref_mode() && ks_basic_string_allocator<ELEM>::_get_refcount32_value(_my_ref_ptr()->alloc_addr()) > 1);
+		return !(this->is_ref_mode() && ks_basic_string_allocator<ELEM>::_peek_refcount32_value(_my_ref_ptr()->alloc_addr(), false) > 1); //note: no need to acquire
 	}
 
 	ks_basic_string_view<ELEM> view() const {

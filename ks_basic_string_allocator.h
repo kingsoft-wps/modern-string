@@ -94,28 +94,31 @@ public:
     bool operator !=(const ks_basic_string_allocator<_Uty>&) const { return false; }
 
 public:
-    static ELEM* _atomic_alloc(size_t _Count) {
+    static ELEM* _refcountful_alloc(size_t _Count) {
         ELEM* _Ptr = allocate(_Count);
-        _atomic_initref(_Ptr);
+        _refcountful_initref(_Ptr);
         return _Ptr;
     }
 
-    static void _atomic_initref(ELEM* _Ptr) {
+    static void _refcountful_initref(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
-        ASSERT(_get_refcount32_value(_Ptr) == 0);
-        (*(uint32_t*)__get_refcount32_p(_Ptr)) = 1;
+        ASSERT(_peek_refcount32_value(_Ptr) == 0);
+        (*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).store(1, std::memory_order_relaxed);
     }
 
-    static void _atomic_addref(ELEM* _Ptr) {
+    static void _refcountful_addref(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
-        ASSERT(_get_refcount32_value(_Ptr) >= 1);
-        (*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_add(1, std::memory_order_relaxed);
+        ASSERT(_peek_refcount32_value(_Ptr) >= 1);
+        (void)(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_add(1, std::memory_order_relaxed);
     }
 
-    static void _atomic_release(ELEM* _Ptr) {
+    static void _refcountful_release(ELEM* _Ptr) {
         ASSERT(_Ptr != nullptr);
-        ASSERT(_get_refcount32_value(_Ptr) >= 1);
-        if ((*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_sub(1, std::memory_order_acq_rel) == 1) {
+        ASSERT(_peek_refcount32_value(_Ptr) >= 1);
+        uint32_t new_value = (*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_sub(1, std::memory_order_release) - 1;
+        if (new_value == 0) {
+            //(void)(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).load(std::memory_order_acquire);
+            std::atomic_thread_fence(std::memory_order_acquire);
             deallocate(_Ptr);
         }
     }
@@ -124,8 +127,8 @@ public:
         return *(uint32_t*)__get_space32_p(p);
     }
 
-    static constexpr uint32_t _get_refcount32_value(ELEM* p) {
-        return (*(std::atomic<uint32_t>*)__get_refcount32_p(p)).load(std::memory_order_acquire);
+    static constexpr uint32_t _peek_refcount32_value(ELEM* p, bool with_acquire_order = false) {
+        return (*(std::atomic<uint32_t>*)__get_refcount32_p(p)).load(with_acquire_order ? std::memory_order_acquire : std::memory_order_relaxed);
     }
 
 private:
