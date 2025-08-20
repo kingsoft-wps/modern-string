@@ -50,6 +50,17 @@ using WCHAR = unsigned short;  //prefer char16_t than unsigned short
 //#endif
 
 
+#ifndef _NODISCARD
+#	if defined(_MSC_VER)
+#		define _NODISCARD _Check_return_
+#	elif defined(__GNUC__)
+#		define _NODISCARD __attribute__((warn_unused_result))
+#	else
+#		error how to decl-nodiscard?
+#	endif
+#endif
+
+
 #ifndef _DEBUG
 #	if !defined(NDEBUG)
 #		define _DEBUG

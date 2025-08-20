@@ -82,6 +82,16 @@ public:
 	ks_basic_immutable_string(std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref, size_t offset, size_t count = -1)
 		: __my_string_base(__my_string_base(std::move(str_rvref)).substr(offset, count)) {}
 
+protected:
+	using typename __my_string_base::__constant_mark;
+	ks_basic_immutable_string(const ELEM* sz, __constant_mark) : __my_string_base(sz, __constant_mark::v) {}
+	ks_basic_immutable_string(const ELEM* sz, size_t length, __constant_mark) : __my_string_base(sz, length, __constant_mark::v) {}
+
+	template <class X>
+	friend inline _NODISCARD ks_basic_immutable_string<X> __constant_immutable_string_of(const X* sz);
+	template <class X>
+	friend inline _NODISCARD ks_basic_immutable_string<X> __constant_immutable_string_of(const X* sz, size_t length);
+
 public:
 	std::vector<ks_basic_immutable_string> split(const ks_basic_string_view<ELEM>& sep, size_t n = -1) const {
 		return this->template do_split<ks_basic_immutable_string>(sep, n);
@@ -163,4 +173,13 @@ namespace std {
 template <class ELEM>
 std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_immutable_string<ELEM>& str) {
 	return strm << str.view();
+}
+
+template <class ELEM>
+inline _NODISCARD ks_basic_immutable_string<ELEM> __constant_immutable_string_of(const ELEM* sz) {
+	return ks_basic_immutable_string<ELEM>(sz, ks_basic_immutable_string<ELEM>::__constant_mark::v);
+}
+template <class ELEM>
+inline _NODISCARD ks_basic_immutable_string<ELEM> __constant_immutable_string_of(const ELEM* sz, size_t length) {
+	return ks_basic_immutable_string<ELEM>(sz, length, ks_basic_immutable_string<ELEM>::__constant_mark::v);
 }

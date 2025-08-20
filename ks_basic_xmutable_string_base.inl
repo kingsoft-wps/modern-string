@@ -39,6 +39,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(const ks_basi
 		ref_ptr->mode = _REF_MODE;
 		ref_ptr->offset32 = 0;
 		ref_ptr->length32 = uint32_t(count);
+		ref_ptr->constantFlag = false;
 		ref_ptr->p = new_alloc_addr;
 	}
 }
@@ -64,6 +65,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(size_t count,
 		ref_ptr->mode = _REF_MODE;
 		ref_ptr->offset32 = 0;
 		ref_ptr->length32 = uint32_t(count);
+		ref_ptr->constantFlag = false;
 		ref_ptr->p = new_alloc_addr;
 	}
 }
@@ -89,25 +91,39 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_st
 		ref_ptr->mode = _REF_MODE;
 		ref_ptr->offset32 = 0;
 		ref_ptr->length32 = uint32_t(str_rvref.length());
+		ref_ptr->constantFlag = false;
 		ref_ptr->p = strdata_addr;
 
 		::new (&str_rvref) std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>{}; //moved-like
 	}
 }
 
+template <class ELEM>
+ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(const ELEM* sz, size_t length, __constant_mark) {
+	ASSERT(sz != nullptr && length <= _STR_LENGTH_LIMIT && sz[length] == 0);
+	auto* ref_ptr = _my_ref_ptr();
+	ref_ptr->mode = _REF_MODE;
+	ref_ptr->offset32 = 0;
+	ref_ptr->length32 = (uint32_t)length;
+	ref_ptr->constantFlag = true;
+	ref_ptr->p = sz;
+}
 
 template <class ELEM>
 void ks_basic_xmutable_string_base<ELEM>::do_ensure_exclusive() {
 	if (!this->is_exclusive()) {
-		ELEM* forked_alloc_addr = ks_basic_string_allocator<ELEM>::_refcountful_alloc(this->capacity() + 1);
-		std::copy_n(this->data(), this->length(), forked_alloc_addr);
-		std::fill_n(forked_alloc_addr + this->length(), this->capacity() - this->length() + 1, 0);
+		const size_t my_length = this->length();
+		const size_t my_capacity = this->capacity();
+		ELEM* forked_alloc_addr = ks_basic_string_allocator<ELEM>::_refcountful_alloc(my_capacity + 1);
+		std::copy_n(this->data(), my_length, forked_alloc_addr);
+		std::fill_n(forked_alloc_addr + my_length, my_capacity - my_length + 1, 0); //with z
 
 		ks_basic_xmutable_string_base forked;
 		auto* forked_ref_ptr = forked._my_ref_ptr();
 		forked_ref_ptr->mode = _REF_MODE;
 		forked_ref_ptr->offset32 = 0;
-		forked_ref_ptr->length32 = uint32_t(this->length());
+		forked_ref_ptr->length32 = uint32_t(my_length);
+		forked_ref_ptr->constantFlag = false;
 		forked_ref_ptr->p = forked_alloc_addr;
 
 		*this = std::move(forked);
@@ -117,7 +133,8 @@ void ks_basic_xmutable_string_base<ELEM>::do_ensure_exclusive() {
 template <class ELEM>
 void ks_basic_xmutable_string_base<ELEM>::do_auto_grow(size_t grow) {
 	if (this->do_determine_need_grow(grow)) {
-		size_t new_capa = std::max(this->length() + grow, this->capacity() + this->capacity() / 2);
+		const size_t my_capacity = this->capacity();
+		size_t new_capa = std::max(this->length() + grow, my_capacity + my_capacity / 2);
 		if (new_capa > _STR_LENGTH_LIMIT) {
 			new_capa = _STR_LENGTH_LIMIT;
 			if (new_capa < this->length() + grow)
@@ -151,6 +168,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_reserve(size_t capa) {
 			grown_ref_ptr->mode = _REF_MODE;
 			grown_ref_ptr->offset32 = 0;
 			grown_ref_ptr->length32 = uint32_t(this->length());
+			grown_ref_ptr->constantFlag = false;
 			grown_ref_ptr->p = grown_alloc_addr;
 
 			*this = std::move(grown);

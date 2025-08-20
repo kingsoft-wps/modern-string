@@ -117,7 +117,6 @@ public:
         ASSERT(_peek_refcount32_value(_Ptr) >= 1);
         uint32_t new_value = (*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_sub(1, std::memory_order_release) - 1;
         if (new_value == 0) {
-            //(void)(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).load(std::memory_order_acquire);
             std::atomic_thread_fence(std::memory_order_acquire);
             deallocate(_Ptr);
         }

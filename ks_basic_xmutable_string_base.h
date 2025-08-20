@@ -64,7 +64,8 @@ public:
 		}
 		else {
 			*_my_ref_ptr() = *other._my_ref_ptr();
-			ks_basic_string_allocator<ELEM>::_refcountful_addref(_my_ref_ptr()->alloc_addr());
+			if (!_my_ref_ptr()->constantFlag)
+				ks_basic_string_allocator<ELEM>::_refcountful_addref(_my_ref_ptr()->alloc_addr());
 		}
 	}
 
@@ -89,7 +90,8 @@ public:
 				else {
 					this->~ks_basic_xmutable_string_base();
 					*_my_ref_ptr() = *other._my_ref_ptr();
-					ks_basic_string_allocator<ELEM>::_refcountful_addref(_my_ref_ptr()->alloc_addr());
+					if (!_my_ref_ptr()->constantFlag)
+						ks_basic_string_allocator<ELEM>::_refcountful_addref(_my_ref_ptr()->alloc_addr());
 				}
 			}
 		}
@@ -109,7 +111,7 @@ public:
 
 	//dtor
 	~ks_basic_xmutable_string_base() {
-		if (this->is_ref_mode()) {
+		if (this->is_ref_mode() && !this->_my_ref_ptr()->constantFlag) {
 			ks_basic_string_allocator<ELEM>::_refcountful_release(_my_ref_ptr()->alloc_addr());
 		}
 	}
@@ -131,6 +133,10 @@ protected:
 	explicit ks_basic_xmutable_string_base(const ks_basic_string_view<ELEM>& str_view);
 	explicit ks_basic_xmutable_string_base(size_t count, ELEM ch);
 	explicit ks_basic_xmutable_string_base(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref);
+
+	enum class __constant_mark { v };
+	explicit ks_basic_xmutable_string_base(const ELEM* sz, __constant_mark) : ks_basic_xmutable_string_base(sz, ks_basic_string_view<ELEM>::__c_strlen(sz), __constant_mark::v) {}
+	explicit ks_basic_xmutable_string_base(const ELEM* sz, size_t length, __constant_mark);
 
 	//detach-void
 	ks_basic_xmutable_string_base do_detach() {
@@ -206,8 +212,9 @@ protected:
 	void do_shrink() {
 		if (this->is_ref_mode()) {
 			auto* ref_ptr = _my_ref_ptr();
-			if (ref_ptr->offset32 != 0 ||
-				ref_ptr->offset32 + ref_ptr->length32 != ks_basic_string_allocator<ELEM>::_get_space32_value(ref_ptr->alloc_addr()) - 1) {
+			if (!ref_ptr->constantFlag && (
+				ref_ptr->offset32 != 0 ||
+				ref_ptr->offset32 + ref_ptr->length32 != ks_basic_string_allocator<ELEM>::_get_space32_value(ref_ptr->alloc_addr()) - 1)) {
 				*this = ks_basic_xmutable_string_base(this->data(), this->length());
 			}
 		}
@@ -312,7 +319,7 @@ protected:
 protected:
 	ks_basic_xmutable_string_base unsafe_substr(size_t pos, size_t count) const {
 		ASSERT(this->view().unsafe_subview(pos, count + 1).is_subview_of(this->unsafe_whole_view()));
-		if (count <= _SSO_BUFFER_SPACE - 1) {
+		if (count <= _SSO_BUFFER_SPACE - 1 && !(this->is_ref_mode() && this->_my_ref_ptr()->constantFlag)) {
 			return ks_basic_xmutable_string_base(this->view().data() + (ptrdiff_t)pos, count);
 		}
 		else {
@@ -334,7 +341,9 @@ protected:
 		else {
 			auto* ref_ptr = _my_ref_ptr();
 			ELEM* alloc_addr = ref_ptr->alloc_addr();
-			return ks_basic_string_view<ELEM>(alloc_addr, ks_basic_string_allocator<ELEM>::_get_space32_value(alloc_addr));
+			return ref_ptr->constantFlag 
+				? ks_basic_string_view<ELEM>(alloc_addr, ref_ptr->p != nullptr ? ref_ptr->offset32 + ref_ptr->length32 + ks_basic_string_view<ELEM>::__c_strlen(ref_ptr->p + ref_ptr->length32) + 1 : 0)
+				: ks_basic_string_view<ELEM>(alloc_addr, ks_basic_string_allocator<ELEM>::_get_space32_value(alloc_addr));
 		}
 	}
 
@@ -388,13 +397,21 @@ public:
 	bool empty() const { return this->length() == 0; }
 
 	size_t capacity() const {
-		return this->is_sso_mode()
-			? _SSO_BUFFER_SPACE - 1
-			: (ks_basic_string_allocator<ELEM>::_get_space32_value(_my_ref_ptr()->alloc_addr()) - 1) - _my_ref_ptr()->offset32;
+		if (this->is_sso_mode()) 
+			return _SSO_BUFFER_SPACE - 1;
+		else 
+			return this->_my_ref_ptr()->constantFlag 
+				? _my_ref_ptr()->length32 + ks_basic_string_view<ELEM>::__c_strlen(_my_ref_ptr()->p + _my_ref_ptr()->length32)
+				: (ks_basic_string_allocator<ELEM>::_get_space32_value(_my_ref_ptr()->alloc_addr()) - 1) - _my_ref_ptr()->offset32;
 	}
 
 	bool is_exclusive() const {
-		return !(this->is_ref_mode() && ks_basic_string_allocator<ELEM>::_peek_refcount32_value(_my_ref_ptr()->alloc_addr(), false) > 1); //note: no need to acquire
+		if (this->is_sso_mode())
+			return false;
+		else 
+			return _my_ref_ptr()->constantFlag 
+				? false 
+				: (ks_basic_string_allocator<ELEM>::_peek_refcount32_value(_my_ref_ptr()->alloc_addr(), false) == 1); //note: not need with acquire-order
 	}
 
 	ks_basic_string_view<ELEM> view() const {
@@ -427,9 +444,10 @@ private:
 	struct _REF_STRUCT {
 		uint32_t mode : _MODE_BITS;
 		uint32_t offset32 : (32 - _MODE_BITS);
-		uint32_t length32;
-		ELEM* p;
-		ELEM* alloc_addr() const { return this->p - (size_t)(this->offset32); }
+		uint32_t length32 : (32 - _MODE_BITS);
+		uint32_t constantFlag : 1;
+		const ELEM* p;
+		ELEM* alloc_addr() const { return const_cast<ELEM*>(this->p) - (size_t)(this->offset32); }
 	};
 
 	union _DATA_UNION {
@@ -445,11 +463,11 @@ private:
 	_DATA_UNION m_data_union;
 
 private:
-	uint8_t _my_mode() const { return m_data_union.mode; }
-	_SSO_STRUCT* _my_sso_ptr() { return &m_data_union.sso_struct; }
-	_REF_STRUCT* _my_ref_ptr() { return &m_data_union.ref_struct; }
-	const _SSO_STRUCT* _my_sso_ptr() const { return &m_data_union.sso_struct; }
-	const _REF_STRUCT* _my_ref_ptr() const { return &m_data_union.ref_struct; }
+	constexpr uint8_t _my_mode() const { return m_data_union.mode; }
+	constexpr _SSO_STRUCT* _my_sso_ptr() { return &m_data_union.sso_struct; }
+	constexpr _REF_STRUCT* _my_ref_ptr() { return &m_data_union.ref_struct; }
+	constexpr const _SSO_STRUCT* _my_sso_ptr() const { return &m_data_union.sso_struct; }
+	constexpr const _REF_STRUCT* _my_ref_ptr() const { return &m_data_union.ref_struct; }
 
 public:
 	bool operator==(const ks_basic_string_view<ELEM>& right) const { return this->view() == right; }
