@@ -82,15 +82,14 @@ public:
 	ks_basic_immutable_string(std::basic_string<ELEM, ks_char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref, size_t offset, size_t count = -1)
 		: __my_string_base(__my_string_base(std::move(str_rvref)).substr(offset, count)) {}
 
-protected:
+private:
 	using typename __my_string_base::__constant_mark;
-	ks_basic_immutable_string(const ELEM* sz, __constant_mark) : __my_string_base(sz, __constant_mark::v) {}
-	ks_basic_immutable_string(const ELEM* sz, size_t length, __constant_mark) : __my_string_base(sz, length, __constant_mark::v) {}
+	ks_basic_immutable_string(__constant_mark, const ELEM* sz, size_t length) : __my_string_base(__constant_mark::v, sz, length) {}
 
-	template <class X>
-	friend inline _NODISCARD ks_basic_immutable_string<X> __constant_immutable_string_of(const X* sz);
-	template <class X>
-	friend inline _NODISCARD ks_basic_immutable_string<X> __constant_immutable_string_of(const X* sz, size_t length);
+public:
+	static _NODISCARD ks_basic_immutable_string __constant_of(const ELEM* sz, size_t length) {
+		return ks_basic_immutable_string(__constant_mark::v, sz, length);
+	}
 
 public:
 	std::vector<ks_basic_immutable_string> split(const ks_basic_string_view<ELEM>& sep, size_t n = -1) const {
@@ -175,11 +174,22 @@ std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<
 	return strm << str.view();
 }
 
-template <class ELEM>
-inline _NODISCARD ks_basic_immutable_string<ELEM> __constant_immutable_string_of(const ELEM* sz) {
-	return ks_basic_immutable_string<ELEM>(sz, ks_basic_immutable_string<ELEM>::__constant_mark::v);
+
+inline _NODISCARD ks_basic_immutable_string<char> operator"" _Immut(const char* sz, size_t length) {
+	return ks_basic_immutable_string<char>::__constant_of(sz, length);
 }
-template <class ELEM>
-inline _NODISCARD ks_basic_immutable_string<ELEM> __constant_immutable_string_of(const ELEM* sz, size_t length) {
-	return ks_basic_immutable_string<ELEM>(sz, length, ks_basic_immutable_string<ELEM>::__constant_mark::v);
+inline _NODISCARD ks_basic_immutable_string<wchar_t> operator"" _Immut(const wchar_t* sz, size_t length) {
+	return ks_basic_immutable_string<wchar_t>::__constant_of(sz, length);
+}
+
+#if __cplusplus >= 202002L
+inline _NODISCARD ks_basic_immutable_string<char8_t> operator"" _Immut(const char8_t* sz, size_t length) {
+	return ks_basic_immutable_string<char8_t>::__constant_of(sz, length);
+}
+#endif
+inline _NODISCARD ks_basic_immutable_string<char16_t> operator"" _Immut(const char16_t* sz, size_t length) {
+	return ks_basic_immutable_string<char16_t>::__constant_of(sz, length);
+}
+inline _NODISCARD ks_basic_immutable_string<char32_t> operator"" _Immut(const char32_t* sz, size_t length) {
+	return ks_basic_immutable_string<char32_t>::__constant_of(sz, length);
 }

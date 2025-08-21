@@ -99,17 +99,6 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_st
 }
 
 template <class ELEM>
-ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(const ELEM* sz, size_t length, __constant_mark) {
-	ASSERT(sz != nullptr && length <= _STR_LENGTH_LIMIT && sz[length] == 0);
-	auto* ref_ptr = _my_ref_ptr();
-	ref_ptr->mode = _REF_MODE;
-	ref_ptr->offset32 = 0;
-	ref_ptr->length32 = (uint32_t)length;
-	ref_ptr->constantFlag = true;
-	ref_ptr->p = sz;
-}
-
-template <class ELEM>
 void ks_basic_xmutable_string_base<ELEM>::do_ensure_exclusive() {
 	if (!this->is_exclusive()) {
 		const size_t my_length = this->length();

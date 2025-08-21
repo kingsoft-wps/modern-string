@@ -285,4 +285,24 @@ protected:
 };
 
 
+constexpr inline _NODISCARD ks_basic_string_view<char> operator"" _View(const char* sz, size_t length) {
+	return ks_basic_string_view<char>(sz, length);
+}
+constexpr inline _NODISCARD ks_basic_string_view<wchar_t> operator"" _View(const wchar_t* sz, size_t length) {
+	return ks_basic_string_view<wchar_t>(sz, length);
+}
+
+#if __cplusplus >= 202002L
+constexpr inline _NODISCARD ks_basic_string_view<char8_t> operator"" _View(const char8_t* sz, size_t length) {
+	return ks_basic_string_view<char8_t>(sz, length);
+}
+#endif
+constexpr inline _NODISCARD ks_basic_string_view<char16_t> operator"" _View(const char16_t* sz, size_t length) {
+	return ks_basic_string_view<char16_t>(sz, length);
+}
+constexpr inline _NODISCARD ks_basic_string_view<char32_t> operator"" _View(const char32_t* sz, size_t length) {
+	return ks_basic_string_view<char32_t>(sz, length);
+}
+
+
 #include "ks_basic_string_view.inl"

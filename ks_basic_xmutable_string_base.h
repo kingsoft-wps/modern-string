@@ -135,8 +135,15 @@ protected:
 	explicit ks_basic_xmutable_string_base(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref);
 
 	enum class __constant_mark { v };
-	explicit ks_basic_xmutable_string_base(const ELEM* sz, __constant_mark) : ks_basic_xmutable_string_base(sz, ks_basic_string_view<ELEM>::__c_strlen(sz), __constant_mark::v) {}
-	explicit ks_basic_xmutable_string_base(const ELEM* sz, size_t length, __constant_mark);
+	explicit ks_basic_xmutable_string_base(__constant_mark, const ELEM* sz, size_t length) {
+		ASSERT(sz != nullptr && length <= _STR_LENGTH_LIMIT && sz[length] == 0);
+		auto* ref_ptr = _my_ref_ptr();
+		ref_ptr->mode = _REF_MODE;
+		ref_ptr->offset32 = 0;
+		ref_ptr->length32 = (uint32_t)length;
+		ref_ptr->constantFlag = true;
+		ref_ptr->p = sz;
+	}
 
 	//detach-void
 	ks_basic_xmutable_string_base do_detach() {
