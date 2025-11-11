@@ -26,7 +26,6 @@ limitations under the License.
 
 namespace ks_string_util {
 	//convert from ...
-	MODERN_STRING_API
 	ks_immutable_wstring wstring_from_u8_chars(const char8_t* p, size_t len) {
 		ks_basic_string_view<uint8_t> str_view8((const uint8_t*)p, len);
 		if (str_view8.empty())
@@ -127,12 +126,10 @@ namespace ks_string_util {
 		return std::move(wstr);
 	}
 
-	MODERN_STRING_API
 	ks_immutable_wstring wstring_from_u16_chars(const char16_t* p, size_t len) {
 		return ks_immutable_wstring((const WCHAR*)p, len);
 	}
 
-	MODERN_STRING_API
 	ks_immutable_wstring wstring_from_u32_chars(const char32_t* p, size_t len) {
 		ks_basic_string_view<uint32_t> str_view32((const uint32_t*)p, len);
 		if (str_view32.empty())
@@ -161,7 +158,6 @@ namespace ks_string_util {
 		return std::move(wstr);
 	}
 
-	MODERN_STRING_API
 	ks_immutable_wstring wstring_from_native_chars(const char* p, size_t len) {
 		ks_basic_string_view<char> str_view(p, len);
 		if (str_view.empty())
@@ -215,7 +211,6 @@ namespace ks_string_util {
 #endif
 	}
 
-	MODERN_STRING_API
 	ks_immutable_wstring wstring_from_native_wide_chars(const wchar_t* p, size_t len) {
 		static_assert(sizeof(wchar_t) == 2 || sizeof(wchar_t) == 4, "the size of wchar_t must be 2 or 4");
 		if (sizeof(wchar_t) == 2)
@@ -226,7 +221,6 @@ namespace ks_string_util {
 
 
 	//convert to ...
-	MODERN_STRING_API
 	std::basic_string<char8_t> wstring_to_std_u8_string(const ks_wstring_view& str_view) {
 		if (str_view.empty())
 			return std::basic_string<char8_t>();
@@ -296,12 +290,10 @@ namespace ks_string_util {
 		return str8;
 	}
 
-	MODERN_STRING_API
 	std::basic_string<char16_t> wstring_to_std_u16_string(const ks_wstring_view& str_view) {
 		return std::basic_string<char16_t>((char16_t*)str_view.data(), str_view.length());
 	}
 
-	MODERN_STRING_API
 	std::basic_string<char32_t> wstring_to_std_u32_string(const ks_wstring_view& str_view) {
 		if (str_view.empty())
 			return std::basic_string<char32_t>();

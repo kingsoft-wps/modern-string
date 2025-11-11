@@ -177,24 +177,24 @@ public:
 #endif
 	}
 
-	static int compare(const char_type* _First1, const char_type* _First2, size_t _Count) {
+	static int compare(const char_type* _First1, const char_type* _First2, size_t _Count) noexcept {
 		return __underlying_std_char_traits::compare((const __underlying_char_type*)_First1, (const __underlying_char_type*)_First2, _Count);
 	}
-	static const char_type* find(const char_type* _First, size_t _Count, char_type _Ch) {
+	static const char_type* find(const char_type* _First, size_t _Count, char_type _Ch) noexcept {
 		return (const char_type*)__underlying_std_char_traits::find((const __underlying_char_type*)_First, _Count, _Ch);
 	}
 
-	static char_type* copy(char_type* dest, const char_type* src, std::size_t count) {
+	static char_type* copy(char_type* dest, const char_type* src, std::size_t count) noexcept {
 		return (char_type*)__underlying_std_char_traits::copy((__underlying_char_type*)dest, (const __underlying_char_type*)src, count);
 	}
-	static char_type* move(char_type* dest, const char_type* src, std::size_t count) {
+	static char_type* move(char_type* dest, const char_type* src, std::size_t count) noexcept {
 		return (char_type*)__underlying_std_char_traits::move((__underlying_char_type*)dest, (const __underlying_char_type*)src, count);
 	}
 
-	static char_type* assign(char_type* _First, size_t _Count, char_type _Ch) {
+	static char_type* assign(char_type* _First, size_t _Count, char_type _Ch) noexcept {
 		return (char_type*)__underlying_std_char_traits::assign((__underlying_char_type*)_First, _Count, _Ch);
 	}
-	static void assign(char_type& _Left, const char_type& _Right) {
+	static void assign(char_type& _Left, const char_type& _Right) noexcept {
 		_Left = _Right;
 	}
 };

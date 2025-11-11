@@ -17,7 +17,7 @@ limitations under the License.
 
 
 template <class ELEM>
-void ks_basic_string_view<ELEM>::trim_left() {
+_NO_INLINE void ks_basic_string_view<ELEM>::trim_left() {
 	if (!this->empty()) {
 		constexpr ELEM space_chars[] = { ' ', '\t', '\r', '\n', '\f', '\v', '\0' };
 		constexpr size_t space_char_count = sizeof(space_chars) / sizeof(space_chars[0]);
@@ -30,7 +30,7 @@ void ks_basic_string_view<ELEM>::trim_left() {
 }
 
 template <class ELEM>
-void ks_basic_string_view<ELEM>::trim_right() {
+_NO_INLINE void ks_basic_string_view<ELEM>::trim_right() {
 	if (!this->empty()) {
 		constexpr ELEM space_chars[] = { ' ', '\t', '\r', '\n', '\f', '\v', '\0' };
 		constexpr size_t space_char_count = sizeof(space_chars) / sizeof(space_chars[0]);
@@ -43,7 +43,7 @@ void ks_basic_string_view<ELEM>::trim_right() {
 }
 
 template <class ELEM>
-std::vector<ks_basic_string_view<ELEM>> ks_basic_string_view<ELEM>::split(const ks_basic_string_view<ELEM>& sep, size_t n) const {
+_NO_INLINE std::vector<ks_basic_string_view<ELEM>> ks_basic_string_view<ELEM>::split(const ks_basic_string_view<ELEM>& sep, size_t n) const {
 	if (this->empty() || n == 1)
 		return { *this };
 
@@ -86,7 +86,19 @@ std::vector<ks_basic_string_view<ELEM>> ks_basic_string_view<ELEM>::split(const 
 }
 
 template <class ELEM>
-size_t ks_basic_string_view<ELEM>::do_find(const ks_basic_string_view<ELEM>& str_view, size_t pos) const {
+_NO_INLINE int ks_basic_string_view<ELEM>::do_compare(const ks_basic_string_view<ELEM>& right) const noexcept {
+	const ELEM* left_data = this->data();
+	const ELEM* right_data = right.data();
+	size_t left_length = this->length();
+	size_t right_length = right.length();
+	int diff = left_data == right_data ? 0 : ks_char_traits<ELEM>::compare(left_data, right_data, std::min(left_length, right_length));
+	if (diff == 0 && left_length != right_length)
+		diff = left_length < right_length ? -1 : +1;
+	return diff;
+}
+
+template <class ELEM>
+_NO_INLINE size_t ks_basic_string_view<ELEM>::do_find(const ks_basic_string_view<ELEM>& str_view, size_t pos) const noexcept {
 	const size_t this_length = this->length();
 	const size_t right_length = str_view.length();
 	if (right_length == 0 || this_length < right_length)
@@ -111,7 +123,7 @@ size_t ks_basic_string_view<ELEM>::do_find(const ks_basic_string_view<ELEM>& str
 }
 
 template <class ELEM>
-size_t ks_basic_string_view<ELEM>::do_rfind(const ks_basic_string_view<ELEM>& str_view, size_t pos) const {
+_NO_INLINE size_t ks_basic_string_view<ELEM>::do_rfind(const ks_basic_string_view<ELEM>& str_view, size_t pos) const noexcept {
 	const size_t this_length = this->length();
 	const size_t right_length = str_view.length();
 	if (right_length == 0 || this_length < right_length)
@@ -134,7 +146,7 @@ size_t ks_basic_string_view<ELEM>::do_rfind(const ks_basic_string_view<ELEM>& st
 }
 
 template <class ELEM>
-size_t ks_basic_string_view<ELEM>::do_find_first_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const {
+_NO_INLINE size_t ks_basic_string_view<ELEM>::do_find_first_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const noexcept {
 	const size_t this_length = this->length();
 	const size_t right_length = str_view.length();
 	if (this_length == 0 || right_length == 0)
@@ -158,7 +170,7 @@ size_t ks_basic_string_view<ELEM>::do_find_first_of(const ks_basic_string_view<E
 }
 
 template <class ELEM>
-size_t ks_basic_string_view<ELEM>::do_find_last_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const {
+_NO_INLINE size_t ks_basic_string_view<ELEM>::do_find_last_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const noexcept {
 	const size_t this_length = this->length();
 	const size_t right_length = str_view.length();
 	if (this_length == 0 || right_length == 0)
@@ -183,17 +195,17 @@ size_t ks_basic_string_view<ELEM>::do_find_last_of(const ks_basic_string_view<EL
 
 
 template <class LEFT, class ELEM, class _ = std::enable_if_t<std::is_convertible_v<LEFT, ks_basic_string_view<ELEM>>>>
-inline bool operator==(const LEFT& left, const ks_basic_string_view<ELEM>& right) { return ks_basic_string_view<ELEM>(left) == right; }
+inline bool operator==(const LEFT& left, const ks_basic_string_view<ELEM>& right) noexcept { return ks_basic_string_view<ELEM>(left) == right; }
 template <class LEFT, class ELEM, class _ = std::enable_if_t<std::is_convertible_v<LEFT, ks_basic_string_view<ELEM>>>>
-inline bool operator!=(const LEFT& left, const ks_basic_string_view<ELEM>& right) { return ks_basic_string_view<ELEM>(left) != right; }
+inline bool operator!=(const LEFT& left, const ks_basic_string_view<ELEM>& right) noexcept { return ks_basic_string_view<ELEM>(left) != right; }
 template <class LEFT, class ELEM, class _ = std::enable_if_t<std::is_convertible_v<LEFT, ks_basic_string_view<ELEM>>>>
-inline bool operator<(const LEFT& left, const ks_basic_string_view<ELEM>& right) { return ks_basic_string_view<ELEM>(left) < right; }
+inline bool operator<(const LEFT& left, const ks_basic_string_view<ELEM>& right) noexcept { return ks_basic_string_view<ELEM>(left) < right; }
 template <class LEFT, class ELEM, class _ = std::enable_if_t<std::is_convertible_v<LEFT, ks_basic_string_view<ELEM>>>>
-inline bool operator<=(const LEFT& left, const ks_basic_string_view<ELEM>& right) { return ks_basic_string_view<ELEM>(left) <= right; }
+inline bool operator<=(const LEFT& left, const ks_basic_string_view<ELEM>& right) noexcept { return ks_basic_string_view<ELEM>(left) <= right; }
 template <class LEFT, class ELEM, class _ = std::enable_if_t<std::is_convertible_v<LEFT, ks_basic_string_view<ELEM>>>>
-inline bool operator>(const LEFT& left, const ks_basic_string_view<ELEM>& right) { return ks_basic_string_view<ELEM>(left) > right; }
+inline bool operator>(const LEFT& left, const ks_basic_string_view<ELEM>& right) noexcept { return ks_basic_string_view<ELEM>(left) > right; }
 template <class LEFT, class ELEM, class _ = std::enable_if_t<std::is_convertible_v<LEFT, ks_basic_string_view<ELEM>>>>
-inline bool operator>=(const LEFT& left, const ks_basic_string_view<ELEM>& right) { return ks_basic_string_view<ELEM>(left) >= right; }
+inline bool operator>=(const LEFT& left, const ks_basic_string_view<ELEM>& right) noexcept { return ks_basic_string_view<ELEM>(left) >= right; }
 
 
 namespace std {
@@ -202,7 +214,7 @@ namespace std {
 		using argument_type = ks_basic_string_view<ELEM>;
 		using result_type = size_t;
 
-		size_t operator()(const ks_basic_string_view<ELEM>& str_view) const noexcept {
+		_NO_INLINE size_t operator()(const ks_basic_string_view<ELEM>& str_view) const noexcept {
 			constexpr size_t _FNV_offset_basis = sizeof(size_t) == 8 ? (size_t)14695981039346656037ULL : (size_t)2166136261UL;
 			constexpr size_t _FNV_prime = sizeof(size_t) == 8 ? (size_t)1099511628211ULL : (size_t)16777619UL;
 
@@ -221,7 +233,7 @@ namespace std {
 
 
 template <class ELEM>
-std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_string_view<ELEM>& str_view) {
+_NO_INLINE std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_string_view<ELEM>& str_view) {
 	using StreamType = std::basic_ostream<ELEM, std::char_traits<ELEM>>;
 	using TraitType = std::char_traits<ELEM>;
 

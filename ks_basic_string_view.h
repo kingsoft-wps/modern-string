@@ -48,129 +48,120 @@ public:
 	static constexpr size_t npos = size_t(-1);
 
 public:
-	constexpr ks_basic_string_view() : m_p(nullptr), m_length(0) {}
-	constexpr ks_basic_string_view(const ELEM* p) : m_p(p), m_length(__c_strlen(p)) {}
-	constexpr ks_basic_string_view(const ELEM* p, size_t count) : m_p(p), m_length(ptrdiff_t(count) < 0 ? __c_strlen(p) : count) {}
+	constexpr ks_basic_string_view() noexcept : m_p(nullptr), m_length(0) {}
+	constexpr ks_basic_string_view(const ELEM* p) noexcept : m_p(p), m_length(__c_strlen(p)) {}
+	constexpr ks_basic_string_view(const ELEM* p, size_t count) noexcept : m_p(p), m_length(ptrdiff_t(count) < 0 ? __c_strlen(p) : count) {}
 
 	//copy ctor
-	ks_basic_string_view(const ks_basic_string_view& other) = default;
-	ks_basic_string_view& operator=(const ks_basic_string_view& other) = default;
+	ks_basic_string_view(const ks_basic_string_view& other) noexcept = default;
+	ks_basic_string_view& operator=(const ks_basic_string_view& other) noexcept = default;
 	ks_basic_string_view(ks_basic_string_view&& other) noexcept = default;
 	ks_basic_string_view& operator=(ks_basic_string_view&& other) noexcept = default;
 
 	//implicit ctor (from ks_xmutable_string, needed until c++17)
-	ks_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) 
+	ks_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) noexcept
 		: m_p(str.data()), m_length(str.length()) {}
 
 	//implicit ctor (from std::basic_string, needed until c++17)
 	template <class CharTraits, class AllocType>
-	ks_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) 
+	ks_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) noexcept
 		: m_p(str.data()), m_length(str.length()) {}
 
 public:
-	iterator begin() const { return iterator{ m_p }; }
-	iterator end() const { return iterator{ m_p + m_length }; }
-	const_iterator cbegin() const { return const_iterator{ m_p }; }
-	const_iterator cend() const { return const_iterator{ m_p + m_length }; }
-	reverse_iterator rbegin() const { return reverse_iterator{ this->end() }; }
-	reverse_iterator rend() const { return reverse_iterator{ this->begin() }; }
-	const_reverse_iterator crbegin() const { return reverse_iterator{ this->cend() }; }
-	const_reverse_iterator crend() const { return reverse_iterator{ this->cbegin() }; }
+	iterator begin() const noexcept { return iterator{ m_p }; }
+	iterator end() const noexcept { return iterator{ m_p + m_length }; }
+	const_iterator cbegin() const noexcept { return const_iterator{ m_p }; }
+	const_iterator cend() const noexcept { return const_iterator{ m_p + m_length }; }
+	reverse_iterator rbegin() const noexcept { return reverse_iterator{ this->end() }; }
+	reverse_iterator rend() const noexcept { return reverse_iterator{ this->begin() }; }
+	const_reverse_iterator crbegin() const noexcept { return reverse_iterator{ this->cend() }; }
+	const_reverse_iterator crend() const noexcept { return reverse_iterator{ this->cbegin() }; }
 
 public:
-	int compare(const ELEM* p) const { return this->do_compare(__to_basic_string_view(p)); }
-	int compare(const ELEM* p, size_t count) const { return this->do_compare(__to_basic_string_view(p, count)); }
-	int compare(const ks_basic_string_view<ELEM>& str_view) const { return this->do_compare(str_view); }
+	int compare(const ELEM* p) const noexcept { return this->do_compare(__to_basic_string_view(p)); }
+	int compare(const ELEM* p, size_t count) const noexcept { return this->do_compare(__to_basic_string_view(p, count)); }
+	int compare(const ks_basic_string_view<ELEM>& str_view) const noexcept { return this->do_compare(str_view); }
 
-	bool equals(const ELEM* p) const { return this->do_equals(__to_basic_string_view(p)); }
-	bool equals(const ELEM* p, size_t count) const { return this->do_equals(__to_basic_string_view(p, count)); }
-	bool equals(const ks_basic_string_view<ELEM>& str_view) const { return this->do_equals(str_view); }
-
-	bool contains(const ELEM* p) const { return this->do_find(__to_basic_string_view(p), 0) != size_t(-1); }
-	bool contains(const ELEM* p, size_t count) const { return this->do_find(__to_basic_string_view(p, count), 0) != size_t(-1); }
-	bool contains(const ks_basic_string_view<ELEM>& str_view) const { return this->do_find(str_view, 0) != size_t(-1); }
-	bool contains(ELEM ch) const { return this->do_find(__to_basic_string_view(&ch, 1), 0) != size_t(-1); }
-
-	bool starts_with(const ELEM* p) const { return this->starts_with(__to_basic_string_view(p)); }
-	bool starts_with(const ELEM* p, size_t count) const { return this->starts_with(__to_basic_string_view(p, count)); }
-	bool starts_with(const ks_basic_string_view<ELEM>& str_view) const { return this->length() >= str_view.length() && this->unsafe_subview(0, str_view.length()).do_equals(str_view); }
-	bool starts_with(ELEM ch) const { return this->starts_with(__to_basic_string_view(&ch, 1)); }
-
-	bool ends_with(const ELEM* p) const { return this->ends_with(__to_basic_string_view(p)); }
-	bool ends_with(const ELEM* p, size_t count) const { return this->ends_with(__to_basic_string_view(p, count)); }
-	bool ends_with(const ks_basic_string_view<ELEM>& str_view) const { return this->length() >= str_view.length() && this->unsafe_subview(this->length() - str_view.length(), str_view.length()).do_equals(str_view); }
-	bool ends_with(ELEM ch) const { return this->ends_with(__to_basic_string_view(&ch, 1)); }
-
-	size_t find(const ELEM* p, size_t pos = 0) const { return this->do_find(__to_basic_string_view(p), pos); }
-	size_t find(const ELEM* p, size_t pos, size_t count) const { return this->do_find(__to_basic_string_view(p, count), pos); }
-	size_t find(const ks_basic_string_view<ELEM>& str_view, size_t pos = 0) const { return this->do_find(str_view, pos); }
-	size_t find(ELEM ch, size_t pos = 0) const { return this->do_find(__to_basic_string_view(&ch, 1), pos); }
-
-	size_t rfind(const ELEM* p, size_t pos = -1) const { return this->do_rfind(__to_basic_string_view(p), pos); }
-	size_t rfind(const ELEM* p, size_t pos, size_t count) const { return this->do_rfind(__to_basic_string_view(p, count), pos); }
-	size_t rfind(const ks_basic_string_view<ELEM>& str_view, size_t pos = -1) const { return this->do_rfind(str_view, pos); }
-	size_t rfind(ELEM ch, size_t pos = -1) const { return this->do_rfind(__to_basic_string_view(&ch, 1), pos); }
-
-	size_t find_first_of(const ELEM* p, size_t pos = 0) const { return this->do_find_first_of(__to_basic_string_view(p), pos, false); }
-	size_t find_first_of(const ELEM* p, size_t pos, size_t count) const { return this->do_find_first_of(__to_basic_string_view(p, count), pos, false); }
-	size_t find_first_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = 0) const { return this->do_find_first_of(str_view, pos, false); }
-	size_t find_first_of(ELEM ch, size_t pos = 0) const { return this->do_find_first_of(__to_basic_string_view(&ch, 1), pos, false); }
-
-	size_t find_last_of(const ELEM* p, size_t pos = -1) const { return this->do_find_last_of(__to_basic_string_view(p), pos, false); }
-	size_t find_last_of(const ELEM* p, size_t pos, size_t count) const { return this->do_find_last_of(__to_basic_string_view(p, count), pos, false); }
-	size_t find_last_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = -1) const { return this->do_find_last_of(str_view, pos, false); }
-	size_t find_last_of(ELEM ch, size_t pos = -1) const { return this->do_find_last_of(__to_basic_string_view(&ch, 1), pos, false); }
-
-	size_t find_first_not_of(const ELEM* p, size_t pos = 0) const { return this->do_find_first_of(__to_basic_string_view(p), pos, true); }
-	size_t find_first_not_of(const ELEM* p, size_t pos, size_t count) const { return this->do_find_first_of(__to_basic_string_view(p, count), pos, true); }
-	size_t find_first_not_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = 0) const { return this->do_find_first_of(str_view, pos, true); }
-	size_t find_first_not_of(ELEM ch, size_t pos = 0) const { return this->do_find_first_of(__to_basic_string_view(&ch, 1), pos, true); }
-
-	size_t find_last_not_of(const ELEM* p, size_t pos = -1) const { return this->do_find_last_of(__to_basic_string_view(p), pos, true); }
-	size_t find_last_not_of(const ELEM* p, size_t pos, size_t count) const { return this->do_find_last_of(__to_basic_string_view(p, count), pos, true); }
-	size_t find_last_not_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = -1) const { return this->do_find_last_of(str_view, pos, true); }
-	size_t find_last_not_of(ELEM ch, size_t pos = -1) const { return this->do_find_last_of(__to_basic_string_view(&ch, 1), pos, true); }
+	bool equals(const ELEM* p) const noexcept { return this->do_equals(__to_basic_string_view(p)); }
+	bool equals(const ELEM* p, size_t count) const noexcept { return this->do_equals(__to_basic_string_view(p, count)); }
+	bool equals(const ks_basic_string_view<ELEM>& str_view) const noexcept { return this->do_equals(str_view); }
 
 public:
-	void trim_left();
-	void trim_right();
+	bool contains(const ELEM* p) const noexcept { return this->do_find(__to_basic_string_view(p), 0) != size_t(-1); }
+	bool contains(const ELEM* p, size_t count) const noexcept { return this->do_find(__to_basic_string_view(p, count), 0) != size_t(-1); }
+	bool contains(const ks_basic_string_view<ELEM>& str_view) const noexcept { return this->do_find(str_view, 0) != size_t(-1); }
+	bool contains(ELEM ch) const noexcept { return this->do_find(__to_basic_string_view(&ch, 1), 0) != size_t(-1); }
 
+	bool starts_with(const ELEM* p) const noexcept { return this->starts_with(__to_basic_string_view(p)); }
+	bool starts_with(const ELEM* p, size_t count) const noexcept { return this->starts_with(__to_basic_string_view(p, count)); }
+	bool starts_with(const ks_basic_string_view<ELEM>& str_view) const noexcept { return this->length() >= str_view.length() && this->unsafe_subview(0, str_view.length()).do_equals(str_view); }
+	bool starts_with(ELEM ch) const noexcept { return this->starts_with(__to_basic_string_view(&ch, 1)); }
+
+	bool ends_with(const ELEM* p) const noexcept { return this->ends_with(__to_basic_string_view(p)); }
+	bool ends_with(const ELEM* p, size_t count) const noexcept { return this->ends_with(__to_basic_string_view(p, count)); }
+	bool ends_with(const ks_basic_string_view<ELEM>& str_view) const noexcept { return this->length() >= str_view.length() && this->unsafe_subview(this->length() - str_view.length(), str_view.length()).do_equals(str_view); }
+	bool ends_with(ELEM ch) const noexcept { return this->ends_with(__to_basic_string_view(&ch, 1)); }
+
+	size_t find(const ELEM* p, size_t pos = 0) const noexcept { return this->do_find(__to_basic_string_view(p), pos); }
+	size_t find(const ELEM* p, size_t pos, size_t count) const noexcept { return this->do_find(__to_basic_string_view(p, count), pos); }
+	size_t find(const ks_basic_string_view<ELEM>& str_view, size_t pos = 0) const noexcept { return this->do_find(str_view, pos); }
+	size_t find(ELEM ch, size_t pos = 0) const noexcept { return this->do_find(__to_basic_string_view(&ch, 1), pos); }
+
+	size_t rfind(const ELEM* p, size_t pos = -1) const noexcept { return this->do_rfind(__to_basic_string_view(p), pos); }
+	size_t rfind(const ELEM* p, size_t pos, size_t count) const noexcept { return this->do_rfind(__to_basic_string_view(p, count), pos); }
+	size_t rfind(const ks_basic_string_view<ELEM>& str_view, size_t pos = -1) const noexcept { return this->do_rfind(str_view, pos); }
+	size_t rfind(ELEM ch, size_t pos = -1) const noexcept { return this->do_rfind(__to_basic_string_view(&ch, 1), pos); }
+
+	size_t find_first_of(const ELEM* p, size_t pos = 0) const noexcept { return this->do_find_first_of(__to_basic_string_view(p), pos, false); }
+	size_t find_first_of(const ELEM* p, size_t pos, size_t count) const noexcept { return this->do_find_first_of(__to_basic_string_view(p, count), pos, false); }
+	size_t find_first_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = 0) const noexcept { return this->do_find_first_of(str_view, pos, false); }
+	size_t find_first_of(ELEM ch, size_t pos = 0) const noexcept { return this->do_find_first_of(__to_basic_string_view(&ch, 1), pos, false); }
+
+	size_t find_last_of(const ELEM* p, size_t pos = -1) const noexcept { return this->do_find_last_of(__to_basic_string_view(p), pos, false); }
+	size_t find_last_of(const ELEM* p, size_t pos, size_t count) const noexcept { return this->do_find_last_of(__to_basic_string_view(p, count), pos, false); }
+	size_t find_last_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = -1) const noexcept { return this->do_find_last_of(str_view, pos, false); }
+	size_t find_last_of(ELEM ch, size_t pos = -1) const noexcept { return this->do_find_last_of(__to_basic_string_view(&ch, 1), pos, false); }
+
+	size_t find_first_not_of(const ELEM* p, size_t pos = 0) const noexcept { return this->do_find_first_of(__to_basic_string_view(p), pos, true); }
+	size_t find_first_not_of(const ELEM* p, size_t pos, size_t count) const noexcept { return this->do_find_first_of(__to_basic_string_view(p, count), pos, true); }
+	size_t find_first_not_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = 0) const noexcept { return this->do_find_first_of(str_view, pos, true); }
+	size_t find_first_not_of(ELEM ch, size_t pos = 0) const noexcept { return this->do_find_first_of(__to_basic_string_view(&ch, 1), pos, true); }
+
+	size_t find_last_not_of(const ELEM* p, size_t pos = -1) const noexcept { return this->do_find_last_of(__to_basic_string_view(p), pos, true); }
+	size_t find_last_not_of(const ELEM* p, size_t pos, size_t count) const noexcept { return this->do_find_last_of(__to_basic_string_view(p, count), pos, true); }
+	size_t find_last_not_of(const ks_basic_string_view<ELEM>& str_view, size_t pos = -1) const noexcept { return this->do_find_last_of(str_view, pos, true); }
+	size_t find_last_not_of(ELEM ch, size_t pos = -1) const noexcept { return this->do_find_last_of(__to_basic_string_view(&ch, 1), pos, true); }
+
+public:
 	void trim() {
 		this->trim_right();
 		this->trim_left();
 	}
 
+	void trim_left();
+	void trim_right();
 
 	std::vector<ks_basic_string_view<ELEM>> split(const ks_basic_string_view<ELEM>& sep, size_t n = -1) const;
 
 protected:
-	int do_compare(const ks_basic_string_view<ELEM>& right) const {
-		const ELEM* left_data = this->data();
-		const ELEM* right_data = right.data();
-		size_t left_length = this->length();
-		size_t right_length = right.length();
-		int diff = left_data == right_data ? 0 : ks_char_traits<ELEM>::compare(left_data, right_data, std::min(left_length, right_length));
-		if (diff == 0 && left_length != right_length)
-			diff = left_length < right_length ? -1 : +1;
-		return diff;
-	}
-
-	bool do_equals(const ks_basic_string_view<ELEM>& right) const {
-		return this->length() == right.length() 
+	bool do_equals(const ks_basic_string_view<ELEM>& right) const noexcept {
+		return this->length() == right.length()
 			&& this->do_compare(right) == 0;
 	}
 
-	size_t do_find(const ks_basic_string_view<ELEM>& str_view, size_t pos) const;
-	size_t do_rfind(const ks_basic_string_view<ELEM>& str_view, size_t pos) const;
+	int do_compare(const ks_basic_string_view<ELEM>& right) const noexcept;
 
-	size_t do_find_first_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const;
-	size_t do_find_last_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const;
+	size_t do_find(const ks_basic_string_view<ELEM>& str_view, size_t pos) const noexcept;
+	size_t do_rfind(const ks_basic_string_view<ELEM>& str_view, size_t pos) const noexcept;
+
+	size_t do_find_first_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const noexcept;
+	size_t do_find_last_of(const ks_basic_string_view<ELEM>& str_view, size_t pos, bool not_mode) const noexcept;
 
 public:
-	ks_basic_string_view slice(size_t from, size_t to = size_t(-1)) const {
+	_NO_INLINE ks_basic_string_view slice(size_t from, size_t to = size_t(-1)) const noexcept {
 		const size_t this_length = this->length();
 		if (from > this_length)
-			throw std::out_of_range("ks_basic_string_view::slice(from, to) out-of-range exception");
+			from = this_length;
 		if (to > this_length)
 			to = this_length;
 		else if (to < from)
@@ -178,7 +169,7 @@ public:
 		return this->unsafe_subview(from, to - from);
 	}
 
-	ks_basic_string_view substr(size_t pos, size_t count = size_t(-1)) const {
+	_NO_INLINE ks_basic_string_view substr(size_t pos, size_t count = size_t(-1)) const {
 		const size_t this_length = this->length();
 		if (pos > this_length)
 			throw std::out_of_range("ks_basic_string_view::substr(pos, count) out-of-range exception");
@@ -194,16 +185,16 @@ public:
 	}
 
 protected:
-	ks_basic_string_view unsafe_subview(size_t pos, size_t count) const {
+	ks_basic_string_view unsafe_subview(size_t pos, size_t count) const noexcept {
 		return ks_basic_string_view(m_p + (ptrdiff_t)pos, count);
 	}
 
 public:
-	bool is_subview_of(const ks_basic_string_view& other) const {
+	bool is_subview_of(const ks_basic_string_view& other) const noexcept {
 		return this->data() >= other.data() && this->data_end() <= other.data_end();
 	}
 
-	bool is_overlapped_with(const ks_basic_string_view& other) const {
+	bool is_overlapped_with(const ks_basic_string_view& other) const noexcept {
 		if (this->empty() || other.empty())
 			return false;
 		if (this->data() >= other.data_end())
@@ -236,26 +227,26 @@ public:
 	}
 
 public:
-	const ELEM* data() const { return m_p; }
-	const ELEM* data_end() const { return m_p + m_length; }
-	size_t length() const { return m_length; }
-	size_t size() const { return m_length; }
-	bool empty() const { return m_length == 0; }
+	const ELEM* data() const noexcept { return m_p; }
+	const ELEM* data_end() const noexcept { return m_p + m_length; }
+	size_t length() const noexcept { return m_length; }
+	size_t size() const noexcept { return m_length; }
+	bool empty() const noexcept { return m_length == 0; }
 
 private:
 	const ELEM* m_p;
 	size_t m_length;
 
 public:
-	bool operator==(const ks_basic_string_view& right) const { return this->equals(right); }
-	bool operator!=(const ks_basic_string_view& right) const { return !this->equals(right); }
-	bool operator<(const ks_basic_string_view& right) const { return this->compare(right) < 0; }
-	bool operator<=(const ks_basic_string_view& right) const { return this->compare(right) <= 0; }
-	bool operator>(const ks_basic_string_view& right) const { return this->compare(right) > 0; }
-	bool operator>=(const ks_basic_string_view& right) const { return this->compare(right) >= 0; }
+	bool operator==(const ks_basic_string_view& right) const noexcept { return this->equals(right); }
+	bool operator!=(const ks_basic_string_view& right) const noexcept { return !this->equals(right); }
+	bool operator<(const ks_basic_string_view& right) const noexcept { return this->compare(right) < 0; }
+	bool operator<=(const ks_basic_string_view& right) const noexcept { return this->compare(right) <= 0; }
+	bool operator>(const ks_basic_string_view& right) const noexcept { return this->compare(right) > 0; }
+	bool operator>=(const ks_basic_string_view& right) const noexcept { return this->compare(right) >= 0; }
 
 protected:
-	static constexpr inline size_t __c_strlen(const ELEM* p) {
+	static constexpr inline size_t __c_strlen(const ELEM* p) noexcept {
 		const ELEM* t = p;
 		if (t != nullptr) {
 			while (*t)
@@ -267,40 +258,40 @@ protected:
 		}
 	}
 
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p) { return ks_basic_string_view<ELEM>(p); }
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p, size_t count) { return ks_basic_string_view<ELEM>(p, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p) noexcept { return ks_basic_string_view<ELEM>(p); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p, size_t count) noexcept { return ks_basic_string_view<ELEM>(p, count); }
 
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view) { return str_view; }
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view, size_t offset, size_t count) { return str_view.substr(offset, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view) noexcept { return str_view; }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view, size_t offset, size_t count) noexcept { return str_view.substr(offset, count); }
 
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) { return str.view(); }
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str, size_t offset, size_t count) { return str.view().substr(offset, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) noexcept { return str.view(); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str, size_t offset, size_t count) noexcept { return str.view().substr(offset, count); }
 
 	template <class CharTraits, class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) { return ks_basic_string_view<ELEM>(str.data(), str.length()); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) noexcept { return ks_basic_string_view<ELEM>(str.data(), str.length()); }
 	template <class CharTraits, class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>(str.data(), str.length()).substr(offset, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str, size_t offset, size_t count) noexcept { return ks_basic_string_view<ELEM>(str.data(), str.length()).substr(offset, count); }
 
 	friend class ks_basic_xmutable_string_base<ELEM>;
 };
 
 
-constexpr inline _NODISCARD ks_basic_string_view<char> operator"" _View(const char* sz, size_t length) {
+constexpr inline _NODISCARD ks_basic_string_view<char> operator"" _View(const char* sz, size_t length) noexcept {
 	return ks_basic_string_view<char>(sz, length);
 }
-constexpr inline _NODISCARD ks_basic_string_view<wchar_t> operator"" _View(const wchar_t* sz, size_t length) {
+constexpr inline _NODISCARD ks_basic_string_view<wchar_t> operator"" _View(const wchar_t* sz, size_t length) noexcept {
 	return ks_basic_string_view<wchar_t>(sz, length);
 }
 
 #if __cplusplus >= 202002L
-constexpr inline _NODISCARD ks_basic_string_view<char8_t> operator"" _View(const char8_t* sz, size_t length) {
+constexpr inline _NODISCARD ks_basic_string_view<char8_t> operator"" _View(const char8_t* sz, size_t length) noexcept {
 	return ks_basic_string_view<char8_t>(sz, length);
 }
 #endif
-constexpr inline _NODISCARD ks_basic_string_view<char16_t> operator"" _View(const char16_t* sz, size_t length) {
+constexpr inline _NODISCARD ks_basic_string_view<char16_t> operator"" _View(const char16_t* sz, size_t length) noexcept {
 	return ks_basic_string_view<char16_t>(sz, length);
 }
-constexpr inline _NODISCARD ks_basic_string_view<char32_t> operator"" _View(const char32_t* sz, size_t length) {
+constexpr inline _NODISCARD ks_basic_string_view<char32_t> operator"" _View(const char32_t* sz, size_t length) noexcept {
 	return ks_basic_string_view<char32_t>(sz, length);
 }
 

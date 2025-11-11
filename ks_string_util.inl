@@ -18,11 +18,11 @@ limitations under the License.
 namespace ks_string_util {
 	//__is_string_empty ...
 	template <class ELEM>
-	bool __is_string_empty(const ELEM* p) {
+	inline bool __is_string_empty(const ELEM* p) {
 		return p == nullptr || p[0] == 0;
 	}
 	template <class ELEM>
-	bool __is_string_empty(const ELEM* p, size_t len) {
+	inline bool __is_string_empty(const ELEM* p, size_t len) {
 		if (len == 0)
 			return true;
 		else if (ptrdiff_t(len) < 0)
@@ -31,67 +31,67 @@ namespace ks_string_util {
 			return p[0] == 0;
 	}
 	template <class ELEM>
-	bool __is_string_empty(const ks_basic_string_view<ELEM>& str_view) {
+	inline bool __is_string_empty(const ks_basic_string_view<ELEM>& str_view) {
 		return str_view.empty();
 	}
 	template <class ELEM>
-	bool __is_string_empty(const ks_basic_xmutable_string_base<ELEM>& str) {
+	inline bool __is_string_empty(const ks_basic_xmutable_string_base<ELEM>& str) {
 		return str.empty();
 	}
 	template <class ELEM, class AllocType>
-	bool __is_string_empty(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) {
+	inline bool __is_string_empty(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) {
 		return str.empty();
 	}
 
 	//__to_string_view ...
 	template <class ELEM>
-	ks_basic_string_view<ELEM> __to_string_view(const ELEM* p) {
+	inline ks_basic_string_view<ELEM> __to_string_view(const ELEM* p) {
 		return ks_basic_string_view<ELEM>(p);
 	}
 	template <class ELEM>
-	ks_basic_string_view<ELEM> __to_string_view(const ELEM* p, size_t len) {
+	inline ks_basic_string_view<ELEM> __to_string_view(const ELEM* p, size_t len) {
 		return ks_basic_string_view<ELEM>(p, len);
 	}
 	template <class ELEM>
-	ks_basic_string_view<ELEM> __to_string_view(const ks_basic_string_view<ELEM>& str_view) {
+	inline ks_basic_string_view<ELEM> __to_string_view(const ks_basic_string_view<ELEM>& str_view) {
 		return str_view;
 	}
 	template <class ELEM>
-	ks_basic_string_view<ELEM> __to_string_view(const ks_basic_xmutable_string_base<ELEM>& str) {
+	inline ks_basic_string_view<ELEM> __to_string_view(const ks_basic_xmutable_string_base<ELEM>& str) {
 		return ks_basic_string_view<ELEM>(str);
 	}
 	template <class ELEM, class AllocType>
-	ks_basic_string_view<ELEM> __to_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) {
+	inline ks_basic_string_view<ELEM> __to_string_view(const std::basic_string<ELEM, std::char_traits<ELEM>, AllocType>& str) {
 		return ks_basic_string_view<ELEM>(str);
 	}
 
 	//stringize ...
 	template <class T>
-	ks_immutable_string to_string(const T& v) {
+	inline ks_immutable_string to_string(const T& v) {
 		return ks_immutable_string(std::to_string(v));
 	}
 
 	template <class T>
-	ks_immutable_wstring to_wstring(const T& v) {
+	inline ks_immutable_wstring to_wstring(const T& v) {
 		extern ks_immutable_wstring wstring_from_native_wide_chars(const wchar_t* p, size_t len);
 		std::wstring std_wstr = std::to_wstring(v);
 		return wstring_from_native_wide_chars(std_wstr.data(), std_wstr.length());
 	}
 
 	//stringize (specialization for bool) ...
-	template <> inline 
-	ks_immutable_string to_string<bool>(const bool& v) {
+	template <> 
+	inline ks_immutable_string to_string<bool>(const bool& v) {
 		return v ? ks_immutable_string("true", 4) : ks_immutable_string("false", 5);
 	}
 
-	template <> inline 
-	ks_immutable_wstring to_wstring<bool>(const bool& v) {
+	template <> 
+	inline ks_immutable_wstring to_wstring<bool>(const bool& v) {
 		return v ? ks_immutable_wstring((const WCHAR*)(u"true"), 4) : ks_immutable_wstring((const WCHAR*)(u"false"), 5);
 	}
 
 	//join ...
 	template <class ELEM, class IT>
-	ks_basic_immutable_string<ELEM> __do_join(IT first, IT last, const ks_basic_string_view<ELEM>& sep, const ks_basic_string_view<ELEM>& prefix, const ks_basic_string_view<ELEM>& suffix) {
+	_NO_INLINE ks_basic_immutable_string<ELEM> __do_join(IT first, IT last, const ks_basic_string_view<ELEM>& sep, const ks_basic_string_view<ELEM>& prefix, const ks_basic_string_view<ELEM>& suffix) {
 		if (sep.empty()) {
 			while (first != last && __is_string_empty(*first))
 				++first;
@@ -133,26 +133,26 @@ namespace ks_string_util {
 	}
 
 	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_string_view>>*/>
-	ks_immutable_string join(IT first, IT last, const ks_string_view& sep) {
+	inline ks_immutable_string join(IT first, IT last, const ks_string_view& sep) {
 		return __do_join<char>(first, last, sep, ks_string_view{}, ks_string_view{});
 	}
 	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_wstring_view>>*/>
-	ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep) {
+	inline ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep) {
 		return __do_join<WCHAR>(first, last, sep, ks_wstring_view{}, ks_wstring_view{});
 	}
 
 	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_string_view>>*/>
-	ks_immutable_string join(IT first, IT last, const ks_string_view& sep, const ks_string_view& prefix, const ks_string_view& suffix) {
+	inline ks_immutable_string join(IT first, IT last, const ks_string_view& sep, const ks_string_view& prefix, const ks_string_view& suffix) {
 		return __do_join<char>(first, last, sep, prefix, suffix);
 	}
 	template <class IT, class _ /*= std::enable_if_t<std::is_convertible_v<decltype(*std::declval<IT>()), ks_wstring_view>>*/>
-	ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep, const ks_wstring_view& prefix, const ks_wstring_view& suffix) {
+	inline ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep, const ks_wstring_view& prefix, const ks_wstring_view& suffix) {
 		return __do_join<WCHAR>(first, last, sep, prefix, suffix);
 	}
 
-	//concat
+	//concat ...
 	template <class ELEM, class T1, class... Ts>
-	ks_basic_immutable_string<ELEM> __do_concat_va(const T1& s1, const Ts&... sx) {
+	_NO_INLINE ks_basic_immutable_string<ELEM> __do_concat_va(const T1& s1, const Ts&... sx) {
 		if (sizeof...(sx) == 0)
 			return s1;
 		if (__is_string_empty(s1))
@@ -177,22 +177,22 @@ namespace ks_string_util {
 	}
 
 	template <class ELEM>
-	ks_basic_immutable_string<ELEM> __do_concat_va() {
+	inline ks_basic_immutable_string<ELEM> __do_concat_va() {
 		return ks_basic_immutable_string<ELEM>();
 	}
 
 	template <class T1, class... Ts, class _ /*= std::enable_if_t<std::is_convertible_v<T1, ks_string_view>>*/>
-	ks_immutable_string concat(const T1& s1, const Ts&... sx) {
+	inline ks_immutable_string concat(const T1& s1, const Ts&... sx) {
 		return __do_concat_va<char>(s1, sx...);
 	}
 	template <class T1, class... Ts, class _ /*= std::enable_if_t<std::is_convertible_v<T1, ks_wstring_view>>*/>
-	ks_immutable_wstring concat(const T1& s1, const Ts&... sx) {
+	inline ks_immutable_wstring concat(const T1& s1, const Ts&... sx) {
 		return __do_concat_va<WCHAR>(s1, sx...);
 	}
 
 	//case convert ...
 	template <class ELEM, class STR_TYPE>
-	ks_basic_immutable_string<ELEM> __to_spec_case(STR_TYPE&& str, bool to_lower_or_upper) {
+	_NO_INLINE ks_basic_immutable_string<ELEM> __to_spec_case(STR_TYPE&& str, bool to_lower_or_upper) {
 		ks_basic_mutable_string<ELEM> mut_ret(std::forward<STR_TYPE>(str));
 
 		size_t pos = 0;
@@ -214,20 +214,20 @@ namespace ks_string_util {
 	}
 
 	template <class STR_TYPE, class _ /*= std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_string_view>>*/>
-	ks_immutable_string to_lower(STR_TYPE&& str) {
+	inline ks_immutable_string to_lower(STR_TYPE&& str) {
 		return __to_spec_case<char>(std::forward<STR_TYPE>(str), true);
 	}
 	template <class STR_TYPE, class _ /*= std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_wstring_view>>*/>
-	ks_immutable_wstring to_lower(STR_TYPE&& str) {
+	inline ks_immutable_wstring to_lower(STR_TYPE&& str) {
 		return __to_spec_case<WCHAR>(std::forward<STR_TYPE>(str), true);
 	}
 
 	template <class STR_TYPE, class _ /*= std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_string_view>>*/>
-	ks_immutable_string to_upper(STR_TYPE&& str) {
+	inline ks_immutable_string to_upper(STR_TYPE&& str) {
 		return __to_spec_case<char>(std::forward<STR_TYPE>(str), false);
 	}
 	template <class STR_TYPE, class _ /*= std::enable_if_t<std::is_convertible_v<STR_TYPE, ks_wstring_view>>*/>
-	ks_immutable_wstring to_upper(STR_TYPE&& str) {
+	inline ks_immutable_wstring to_upper(STR_TYPE&& str) {
 		return __to_spec_case<WCHAR>(std::forward<STR_TYPE>(str), false);
 	}
 

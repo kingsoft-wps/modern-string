@@ -28,16 +28,18 @@ public:
 	using reference = ELEM&;
 
 public:
-	ks_basic_pointer_iterator() = default;
-	ks_basic_pointer_iterator(const ks_basic_pointer_iterator&) = default;
-	ks_basic_pointer_iterator& operator=(const ks_basic_pointer_iterator&) = default;
+	ks_basic_pointer_iterator() noexcept = default;
+	ks_basic_pointer_iterator(const ks_basic_pointer_iterator&) noexcept = default;
+	ks_basic_pointer_iterator& operator=(const ks_basic_pointer_iterator&) noexcept = default;
+	ks_basic_pointer_iterator(ks_basic_pointer_iterator&&) noexcept = default;
+	ks_basic_pointer_iterator& operator=(ks_basic_pointer_iterator&&) noexcept = default;
 
 	template <class ELEM2, class _ = std::enable_if_t<std::is_const_v<ELEM> && !std::is_const_v<ELEM2>>>
-	ks_basic_pointer_iterator(const ks_basic_pointer_iterator<ELEM2>& r) : _p(&(*r)) {
+	ks_basic_pointer_iterator(const ks_basic_pointer_iterator<ELEM2>& r) noexcept : _p(&(*r)) {
 		static_assert(std::is_const_v<ELEM> && !std::is_const_v<ELEM2>, "the type of both ELEMs must be consistent");
 	}
 
-	explicit ks_basic_pointer_iterator(ELEM* p) : _p(p) {}
+	explicit ks_basic_pointer_iterator(ELEM* p) noexcept : _p(p) {}
 
 public:
 	pointer operator->() const { return _p; }
@@ -53,15 +55,15 @@ public:
 	ks_basic_pointer_iterator& operator+=(const difference_type offs) { _p += offs; return *this; }
 	ks_basic_pointer_iterator& operator-=(const difference_type offs) { _p -= offs; return *this; }
 
-	difference_type operator-(const ks_basic_pointer_iterator& r) const { return _p - r._p; }
+	difference_type operator-(const ks_basic_pointer_iterator& r) const noexcept { return _p - r._p; }
 	reference operator[](const difference_type offs) const { return *(*this + offs); }
 
-	bool operator<(const ks_basic_pointer_iterator& r) const { return _p < r._p; }
-	bool operator>(const ks_basic_pointer_iterator& r) const { return _p > r._p; }
-	bool operator<=(const ks_basic_pointer_iterator& r) const { return _p <= r._p; }
-	bool operator>=(const ks_basic_pointer_iterator& r) const { return _p >= r._p; }
-	bool operator==(const ks_basic_pointer_iterator& r) const { return _p == r._p; }
-	bool operator!=(const ks_basic_pointer_iterator& r) const { return _p != r._p; }
+	bool operator<(const ks_basic_pointer_iterator& r) const noexcept { return _p < r._p; }
+	bool operator>(const ks_basic_pointer_iterator& r) const noexcept { return _p > r._p; }
+	bool operator<=(const ks_basic_pointer_iterator& r) const noexcept { return _p <= r._p; }
+	bool operator>=(const ks_basic_pointer_iterator& r) const noexcept { return _p >= r._p; }
+	bool operator==(const ks_basic_pointer_iterator& r) const noexcept { return _p == r._p; }
+	bool operator!=(const ks_basic_pointer_iterator& r) const noexcept { return _p != r._p; }
 
 private:
 	ELEM* _p = nullptr;

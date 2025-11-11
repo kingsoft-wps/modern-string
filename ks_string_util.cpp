@@ -18,7 +18,6 @@ limitations under the License.
 
 namespace ks_string_util {
 	//icase compare ...
-	MODERN_STRING_INLINE_API
 	template <class ELEM> 
 	static int __do_icase_compare(const ks_basic_string_view<ELEM>& left, const ks_basic_string_view<ELEM>& right) {
 		const ELEM* left_data = left.data();
@@ -57,19 +56,16 @@ namespace ks_string_util {
 		return diff;
 	}
 
-	MODERN_STRING_INLINE_API
 	template <class ELEM> 
 	static bool __do_icase_equals(const ks_basic_string_view<ELEM>& left, const ks_basic_string_view<ELEM>& right) {
 		return left.length() == right.length()
 			&& __do_icase_compare<ELEM>(left, right) == 0;
 	}
 
-	MODERN_STRING_API
 	bool icase_equals(const ks_string_view& left, const ks_string_view& right) {
 		return __do_icase_equals<char>(left, right);
 	}
 
-	MODERN_STRING_API
 	bool icase_equals(const ks_wstring_view& left, const ks_wstring_view& right) {
 		return __do_icase_equals<WCHAR>(left, right);
 	}

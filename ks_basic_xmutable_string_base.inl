@@ -17,7 +17,7 @@ limitations under the License.
 
 
 template <class ELEM>
-ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(const ks_basic_string_view<ELEM>& str_view) : ks_basic_xmutable_string_base() {
+_NO_INLINE ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(const ks_basic_string_view<ELEM>& str_view) : ks_basic_xmutable_string_base() {
 	const ELEM* p = str_view.data();
 	size_t count = str_view.length();
 	if (count > _STR_LENGTH_LIMIT)
@@ -45,7 +45,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(const ks_basi
 }
 
 template <class ELEM>
-ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(size_t count, ELEM ch) : ks_basic_xmutable_string_base() {
+_NO_INLINE ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(size_t count, ELEM ch) : ks_basic_xmutable_string_base() {
 	if (count > _STR_LENGTH_LIMIT)
 		throw std::overflow_error("ks_basic_xmutable_string_base(count, ch) overflow exception");
 
@@ -71,7 +71,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(size_t count,
 }
 
 template <class ELEM>
-ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref) : ks_basic_xmutable_string_base() {
+_NO_INLINE ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref) : ks_basic_xmutable_string_base() {
 	if (str_rvref.length() > _STR_LENGTH_LIMIT)
 		throw std::overflow_error("ks_basic_xmutable_string_base(&&str) overflow exception");
 
@@ -99,7 +99,7 @@ ks_basic_xmutable_string_base<ELEM>::ks_basic_xmutable_string_base(std::basic_st
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_ensure_exclusive() {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_ensure_exclusive() {
 	if (!this->is_exclusive()) {
 		const size_t my_length = this->length();
 		const size_t my_capacity = this->capacity();
@@ -120,7 +120,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_ensure_exclusive() {
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_auto_grow(size_t grow) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_auto_grow(size_t grow) {
 	if (this->do_determine_need_grow(grow)) {
 		const size_t my_capacity = this->capacity();
 		size_t new_capa = std::max(this->length() + grow, my_capacity + my_capacity / 2);
@@ -135,7 +135,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_auto_grow(size_t grow) {
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_reserve(size_t capa) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_reserve(size_t capa) {
 	if (capa > this->capacity()) {
 		size_t new_capa = capa;
 		if (new_capa > _STR_LENGTH_LIMIT) {
@@ -167,7 +167,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_reserve(size_t capa) {
 
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_assign(const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_assign(const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
 	if (str_view.empty())
 		return this->do_clear(ensure_end_ch0);
 
@@ -197,13 +197,23 @@ void ks_basic_xmutable_string_base<ELEM>::do_assign(const ks_basic_string_view<E
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_assign(size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
+inline void ks_basic_xmutable_string_base<ELEM>::do_assign(size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
 	this->do_clear(false);
 	this->do_append(ch, ch_valid, ensure_end_ch0);
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_insert(size_t pos, const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
+inline void ks_basic_xmutable_string_base<ELEM>::do_append(const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
+	this->do_insert(this->length(), str_view, ensure_end_ch0);
+}
+
+template <class ELEM>
+inline void ks_basic_xmutable_string_base<ELEM>::do_append(size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
+	this->do_insert(this->length(), count, ch, ch_valid, ensure_end_ch0);
+}
+
+template <class ELEM>
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_insert(size_t pos, const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
 	if (pos > this->length())
 		throw std::out_of_range("ks_basic_xmutable_string_base::insert(pos, ...) out-of-range exception");
 	if (str_view.empty())
@@ -247,7 +257,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_insert(size_t pos, const ks_basic_s
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_insert(size_t pos, size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_insert(size_t pos, size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
 	if (pos > this->length())
 		throw std::out_of_range("ks_basic_xmutable_string_base::insert(pos, ...) out-of-range exception");
 	if (count == 0)
@@ -270,7 +280,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_insert(size_t pos, size_t count, EL
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_replace(size_t pos, size_t number, const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_replace(size_t pos, size_t number, const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
 	if (ptrdiff_t(number) < 0)
 		number = this->length() - pos;
 
@@ -326,7 +336,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_replace(size_t pos, size_t number, 
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_replace(size_t pos, size_t number, size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_replace(size_t pos, size_t number, size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
 	if (ptrdiff_t(number) < 0)
 		number = this->length() - pos;
 
@@ -361,7 +371,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_replace(size_t pos, size_t number, 
 }
 
 template <class ELEM>
-size_t ks_basic_xmutable_string_base<ELEM>::do_substitute_n(const ks_basic_string_view<ELEM>& sub, const ks_basic_string_view<ELEM>& replacement, size_t n, bool ensure_end_ch0) {
+_NO_INLINE size_t ks_basic_xmutable_string_base<ELEM>::do_substitute_n(const ks_basic_string_view<ELEM>& sub, const ks_basic_string_view<ELEM>& replacement, size_t n, bool ensure_end_ch0) {
 	if (n == 0 || sub.empty())
 		return 0;
 
@@ -508,7 +518,7 @@ size_t ks_basic_xmutable_string_base<ELEM>::do_substitute_n(const ks_basic_strin
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_erase(size_t pos, size_t number, bool ensure_end_ch0) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_erase(size_t pos, size_t number, bool ensure_end_ch0) {
 	if (ptrdiff_t(number) < 0)
 		number = this->length() - pos;
 
@@ -535,7 +545,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_erase(size_t pos, size_t number, bo
 }
 
 template <class ELEM>
-void ks_basic_xmutable_string_base<ELEM>::do_clear(bool ensure_end_ch0) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_clear(bool ensure_end_ch0) {
 	if (this->is_sso_mode()) {
 		auto* sso_ptr = _my_sso_ptr();
 		sso_ptr->length8 = 0;
@@ -550,7 +560,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_clear(bool ensure_end_ch0) {
 
 template <class ELEM>
 template <class RIGHT, class _ /*= std::enable_if_t<std::is_convertible_v<RIGHT, ks_basic_string_view<ELEM>>>*/>
-void ks_basic_xmutable_string_base<ELEM>::do_self_add(RIGHT&& right, bool could_ref_right_data_directly, bool ensure_end_ch0) {
+_NO_INLINE void ks_basic_xmutable_string_base<ELEM>::do_self_add(RIGHT&& right, bool could_ref_right_data_directly, bool ensure_end_ch0) {
 	const ks_basic_string_view<ELEM> right_view = __to_basic_string_view(right);
 	bool will_ref_right_data_directly = false;
 	if (could_ref_right_data_directly && !right_view.empty() && this->empty()) {
@@ -578,7 +588,7 @@ void ks_basic_xmutable_string_base<ELEM>::do_self_add(RIGHT&& right, bool could_
 
 template <class ELEM>
 template <class STR_TYPE, class _ /*= std::enable_if_t<std::is_base_of_v<ks_basic_xmutable_string_base<ELEM>, STR_TYPE>>*/>
-std::vector<STR_TYPE> ks_basic_xmutable_string_base<ELEM>::do_split(const ks_basic_string_view<ELEM>& sep, size_t n) const {
+_NO_INLINE std::vector<STR_TYPE> ks_basic_xmutable_string_base<ELEM>::do_split(const ks_basic_string_view<ELEM>& sep, size_t n) const {
 	const auto& this_view = this->view();
 	std::vector<ks_basic_string_view<ELEM>> sub_view_seq = this_view.split(sep, n);
 
@@ -615,6 +625,6 @@ namespace std {
 
 
 template <class ELEM>
-std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_xmutable_string_base<ELEM>& str) {
+inline std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_xmutable_string_base<ELEM>& str) {
 	return strm << str.view();
 }

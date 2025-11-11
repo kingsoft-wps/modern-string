@@ -43,7 +43,7 @@ public:
 
 public:
 	//normal ctor
-	ks_basic_immutable_string() : __my_string_base() {}
+	ks_basic_immutable_string() noexcept : __my_string_base() {}
 	ks_basic_immutable_string(const ELEM* p) : __my_string_base(p) {}
 	ks_basic_immutable_string(const ELEM* p, size_t count) : __my_string_base(p, count) {}
 
@@ -54,8 +54,8 @@ public:
 	ks_basic_immutable_string(size_t count, ELEM ch) : __my_string_base(count, ch) {}
 
 	//copy & move ctor
-	ks_basic_immutable_string(const ks_basic_immutable_string& other) = default;
-	ks_basic_immutable_string& operator=(const ks_basic_immutable_string& other) = default;
+	ks_basic_immutable_string(const ks_basic_immutable_string& other) noexcept = default;
+	ks_basic_immutable_string& operator=(const ks_basic_immutable_string& other) noexcept = default;
 	ks_basic_immutable_string(ks_basic_immutable_string&& other) noexcept = default;
 	ks_basic_immutable_string& operator=(ks_basic_immutable_string&& other) noexcept = default;
 
@@ -84,10 +84,10 @@ public:
 
 private:
 	using typename __my_string_base::__constant_mark;
-	ks_basic_immutable_string(__constant_mark, const ELEM* sz, size_t length) : __my_string_base(__constant_mark::v, sz, length) {}
+	ks_basic_immutable_string(__constant_mark, const ELEM* sz, size_t length) noexcept : __my_string_base(__constant_mark::v, sz, length) {}
 
 public:
-	static _NODISCARD ks_basic_immutable_string __constant_of(const ELEM* sz, size_t length) {
+	static _NODISCARD ks_basic_immutable_string __constant_of(const ELEM* sz, size_t length) noexcept {
 		return ks_basic_immutable_string(__constant_mark::v, sz, length);
 	}
 
@@ -116,11 +116,20 @@ public:
 	ks_basic_immutable_string shrunk()&& { this->do_shrink(); return this->detach(); }
 
 public:
+	_NO_INLINE void swap(ks_basic_immutable_string& r) noexcept {
+		if (this != &r) {
+			ks_basic_immutable_string tmp = std::move(*this);
+			*this = std::move(r);
+			r = std::move(tmp);
+		}
+	}
+
+public:
 	ks_basic_mutable_string<ELEM> to_mutable() const& { return ks_basic_mutable_string<ELEM>(*this); }
 	ks_basic_mutable_string<ELEM> to_mutable()&& { return ks_basic_mutable_string<ELEM>(this->detach()); }
 
-	ks_basic_immutable_string detach() { return ks_basic_immutable_string(std::move(*this)); }
-	ks_basic_mutable_string<ELEM> detach_to_mutable() { return ks_basic_mutable_string<ELEM>(this->detach()); }
+	ks_basic_immutable_string detach() noexcept { return ks_basic_immutable_string(std::move(*this)); }
+	ks_basic_mutable_string<ELEM> detach_to_mutable() noexcept { return ks_basic_mutable_string<ELEM>(this->detach()); }
 
 public:
 	template <class RIGHT, class _ = std::enable_if_t<std::is_convertible_v<RIGHT, ks_basic_string_view<ELEM>>>>
@@ -165,12 +174,18 @@ inline ks_basic_immutable_string<ELEM> operator+(const LEFT& left, ks_basic_immu
 
 namespace std {
 	template <class ELEM>
+	inline void swap(ks_basic_immutable_string<ELEM>& l, ks_basic_immutable_string<ELEM>& r) noexcept {
+		l.swap(r);
+	}
+
+	template <class ELEM>
 	struct hash<ks_basic_immutable_string<ELEM>> : hash<ks_basic_xmutable_string_base<ELEM>> {
 	};
+
 }
 
 template <class ELEM>
-std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_immutable_string<ELEM>& str) {
+inline std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_immutable_string<ELEM>& str) {
 	return strm << str.view();
 }
 

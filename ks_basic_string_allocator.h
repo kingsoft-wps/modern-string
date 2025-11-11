@@ -30,17 +30,17 @@ public:
     using pointer = ELEM*;
     using const_pointer = const ELEM*;
 
-    constexpr ks_basic_string_allocator() {}
-    constexpr ks_basic_string_allocator(const ks_basic_string_allocator&) {}
+    constexpr ks_basic_string_allocator() noexcept {}
+    constexpr ks_basic_string_allocator(const ks_basic_string_allocator&) noexcept {}
 
     template <class ELEM2> 
-    constexpr ks_basic_string_allocator(const ks_basic_string_allocator<ELEM2>&) {}
+    constexpr ks_basic_string_allocator(const ks_basic_string_allocator<ELEM2>&) noexcept {}
 
     template <class ELEM2>
     struct rebind { using other = ks_basic_string_allocator<ELEM2>; };
 
-    static ELEM* address(ELEM& _Val) { return std::addressof(_Val); }
-    static const ELEM* address(const ELEM& _Val) { return std::addressof(_Val); }
+    static ELEM* address(ELEM& _Val) noexcept { return std::addressof(_Val); }
+    static const ELEM* address(const ELEM& _Val) noexcept { return std::addressof(_Val); }
 
     static ELEM* allocate(size_t _Count) {
         if (_Count > 0x7FFFFFFFu)
@@ -62,29 +62,29 @@ public:
         return allocate(_Count);
     }
 
-    static void deallocate(ELEM* _Ptr) {
+    static void deallocate(ELEM* _Ptr) noexcept {
         ASSERT(_Ptr != nullptr);
         ASSERT(*(uint32_t*)__get_refcount32_p(_Ptr) == 0);
         free((void*)(uintptr_t(_Ptr) - __header_size()));
     }
 
-    static void deallocate(ELEM* _Ptr, size_t _Count) {
+    static void deallocate(ELEM* _Ptr, size_t _Count) noexcept {
         ASSERT(_Ptr != nullptr);
         ASSERT(_get_space32_value(_Ptr) == ((_Count * sizeof(ELEM) + 3) & ~size_t(0x03)) / sizeof(ELEM));
         deallocate(_Ptr);
     }
 
     template <class _Objty, class... _Types> 
-    static void construct(_Objty* _Ptr, _Types&&... _Args) {
+    static void construct(_Objty* _Ptr, _Types&&... _Args) noexcept(std::is_nothrow_constructible<_Objty, _Types...>::value) {
         ::new (const_cast<void*>(static_cast<const volatile void*>(_Ptr))) _Objty(std::forward<_Types>(_Args)...); 
     }
 
     template <class _Uty> 
-    static void destroy(_Uty* _Ptr) {
+    static void destroy(_Uty* _Ptr) noexcept(std::is_nothrow_destructible<_Uty>::value) {
         _Ptr->~_Uty(); 
     }
 
-    static constexpr size_t max_size() {
+    static constexpr size_t max_size() noexcept {
         return (size_t(-1) - __header_size()) / sizeof(ELEM);
     }
 
@@ -100,19 +100,19 @@ public:
         return _Ptr;
     }
 
-    static void _refcountful_initref(ELEM* _Ptr) {
+    static void _refcountful_initref(ELEM* _Ptr) noexcept {
         ASSERT(_Ptr != nullptr);
         ASSERT(_peek_refcount32_value(_Ptr) == 0);
         (*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).store(1, std::memory_order_relaxed);
     }
 
-    static void _refcountful_addref(ELEM* _Ptr) {
+    static void _refcountful_addref(ELEM* _Ptr) noexcept {
         ASSERT(_Ptr != nullptr);
         ASSERT(_peek_refcount32_value(_Ptr) >= 1);
         (void)(*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_add(1, std::memory_order_relaxed);
     }
 
-    static void _refcountful_release(ELEM* _Ptr) {
+    static void _refcountful_release(ELEM* _Ptr) noexcept {
         ASSERT(_Ptr != nullptr);
         ASSERT(_peek_refcount32_value(_Ptr) >= 1);
         uint32_t new_value = (*(std::atomic<uint32_t>*)__get_refcount32_p(_Ptr)).fetch_sub(1, std::memory_order_release) - 1;
@@ -122,27 +122,27 @@ public:
         }
     }
 
-    static constexpr uint32_t _get_space32_value(ELEM* p) {
+    static constexpr uint32_t _get_space32_value(ELEM* p) noexcept {
         return *(uint32_t*)__get_space32_p(p);
     }
 
-    static constexpr uint32_t _peek_refcount32_value(ELEM* p, bool with_acquire_order = false) {
+    static constexpr uint32_t _peek_refcount32_value(ELEM* p, bool with_acquire_order = false) noexcept {
         return (*(std::atomic<uint32_t>*)__get_refcount32_p(p)).load(with_acquire_order ? std::memory_order_acquire : std::memory_order_relaxed);
     }
 
 private:
-    static constexpr size_t __header_size() {
+    static constexpr size_t __header_size() noexcept {
         static_assert(alignof(ELEM) < 8 ? true : alignof(ELEM) % 4 == 0, "the asign of larger ELEM type must be multi of 4");
         return alignof(ELEM) < 8 ? 8 : alignof(ELEM);
     }
 
-    static constexpr void* __get_space32_p(ELEM* p) {
+    static constexpr void* __get_space32_p(ELEM* p) noexcept {
         ASSERT(p != nullptr);
         ASSERT(uintptr_t(p) % 4 == 0);
         return (void*)(uint32_t*)(uintptr_t(p) - 4);
     }
 
-    static constexpr void* __get_refcount32_p(ELEM* p) {
+    static constexpr void* __get_refcount32_p(ELEM* p) noexcept {
         ASSERT(p != nullptr);
         ASSERT(uintptr_t(p) % 4 == 0);
         return (void*)(uint32_t*)(uintptr_t(p) - 8);

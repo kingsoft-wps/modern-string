@@ -216,140 +216,110 @@ namespace ks_string_util {
 	////////////////////////////////////////////////////////////////////////////////////////
 
 	//parse int ...
-	MODERN_STRING_API
 	int parse_int(const ks_string_view& str_view, int def_value, size_t* pos, int base) {
 		return __do_parse_intx<int>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	int parse_int(const ks_wstring_view& str_view, int def_value, size_t* pos, int base) {
 		return __do_parse_intx<int>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	int8_t parse_int8(const ks_string_view& str_view, int8_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int8_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	int8_t parse_int8(const ks_wstring_view& str_view, int8_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int8_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	int16_t parse_int16(const ks_string_view& str_view, int16_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int16_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	int16_t parse_int16(const ks_wstring_view& str_view, int16_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int16_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	int32_t parse_int32(const ks_string_view& str_view, int32_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int32_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	int32_t parse_int32(const ks_wstring_view& str_view, int32_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int32_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	int64_t parse_int64(const ks_string_view& str_view, int64_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int64_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	int64_t parse_int64(const ks_wstring_view& str_view, int64_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<int64_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	intptr_t parse_intptr(const ks_string_view& str_view, intptr_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<intptr_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	intptr_t parse_intptr(const ks_wstring_view& str_view, intptr_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<intptr_t>(str_view, def_value, pos, base);
 	}
 
 	//parse uint ...
-	MODERN_STRING_API
 	uint parse_uint(const ks_string_view& str_view, uint def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	uint parse_uint(const ks_wstring_view& str_view, uint def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	uint8_t parse_uint8(const ks_string_view& str_view, uint8_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint8_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	uint8_t parse_uint8(const ks_wstring_view& str_view, uint8_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint8_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	uint16_t parse_uint16(const ks_string_view& str_view, uint16_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint16_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	uint16_t parse_uint16(const ks_wstring_view& str_view, uint16_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint16_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	uint32_t parse_uint32(const ks_string_view& str_view, uint32_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint32_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	uint32_t parse_uint32(const ks_wstring_view& str_view, uint32_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint32_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	uint64_t parse_uint64(const ks_string_view& str_view, uint64_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint64_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	uint64_t parse_uint64(const ks_wstring_view& str_view, uint64_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uint64_t>(str_view, def_value, pos, base);
 	}
 
-	MODERN_STRING_API
 	uintptr_t parse_uintptr(const ks_string_view& str_view, uintptr_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uintptr_t>(str_view, def_value, pos, base);
 	}
-	MODERN_STRING_API
 	uintptr_t parse_uintptr(const ks_wstring_view& str_view, uintptr_t def_value, size_t* pos, int base) {
 		return __do_parse_intx<uintptr_t>(str_view, def_value, pos, base);
 	}
 
 	//parse float ...
-	MODERN_STRING_API
 	float parse_float(const ks_string_view& str_view, float def_value, size_t* pos) {
 		return __do_parse_floatx<float>(str_view, def_value, pos);
 	}
-	MODERN_STRING_API
 	float parse_float(const ks_wstring_view& str_view, float def_value, size_t* pos) {
 		return __do_parse_floatx<float>(str_view, def_value, pos);
 	}
 
-	MODERN_STRING_API
 	double parse_double(const ks_string_view& str_view, double def_value, size_t* pos) {
 		return __do_parse_floatx<double>(str_view, def_value, pos);
 	}
-	MODERN_STRING_API
 	double parse_double(const ks_wstring_view& str_view, double def_value, size_t* pos) {
 		return __do_parse_floatx<double>(str_view, def_value, pos);
 	}
 
 	//parse bool ...
-	MODERN_STRING_API
 	bool parse_bool(const ks_string_view& str_view, bool def_value, size_t* pos) {
 		return __do_parse_boolx<bool>(str_view, def_value, pos);
 	}
-	MODERN_STRING_API
 	bool parse_bool(const ks_wstring_view& str_view, bool def_value, size_t* pos) {
 		return __do_parse_boolx<bool>(str_view, def_value, pos);
 	}

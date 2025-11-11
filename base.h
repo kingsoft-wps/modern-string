@@ -106,6 +106,17 @@ using WCHAR = unsigned short;  //prefer char16_t than unsigned short
 #endif
 
 
+#ifndef _NO_INLINE
+#	if defined(_MSC_VER)
+#		define _NO_INLINE __declspec(noinline)
+#	elif defined(__GNUC__)
+#		define _NO_INLINE __attribute__((noinline))
+#	else
+#		error how to decl-noinline?
+#	endif
+#endif
+
+
 //#ifdef MODERN_STRING_EXPORTS
 //#    define MODERN_STRING_API _DECL_EXPORT
 //#    define MODERN_STRING_INLINE_API

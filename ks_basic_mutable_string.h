@@ -44,7 +44,7 @@ public:
 
 public:
 	//normal ctor
-	ks_basic_mutable_string() : __my_string_base() { ASSERT(this->do_check_end_ch0()); }
+	ks_basic_mutable_string() noexcept : __my_string_base() { ASSERT(this->do_check_end_ch0()); }
 	ks_basic_mutable_string(const ELEM* p) : __my_string_base(p) { ASSERT(this->do_check_end_ch0()); }
 	ks_basic_mutable_string(const ELEM* p, size_t count) : __my_string_base(p, count) { ASSERT(this->do_check_end_ch0()); }
 
@@ -55,8 +55,8 @@ public:
 	ks_basic_mutable_string(size_t count, ELEM ch) : __my_string_base(count, ch) { ASSERT(this->do_check_end_ch0()); }
 	
 	//copy & move ctor
-	ks_basic_mutable_string(const ks_basic_mutable_string& other) = default;
-	ks_basic_mutable_string& operator=(const ks_basic_mutable_string& other) = default;
+	ks_basic_mutable_string(const ks_basic_mutable_string& other) noexcept = default;
+	ks_basic_mutable_string& operator=(const ks_basic_mutable_string& other) noexcept = default;
 	ks_basic_mutable_string(ks_basic_mutable_string&& other) noexcept = default;
 	ks_basic_mutable_string& operator=(ks_basic_mutable_string&& other) noexcept = default;
 
@@ -408,6 +408,14 @@ public:
 		ASSERT(this->do_check_end_ch0());
 	}
 
+	_NO_INLINE void swap(ks_basic_mutable_string& r) noexcept {
+		if (this != &r) {
+			ks_basic_mutable_string tmp = std::move(*this);
+			*this = std::move(r);
+			r = std::move(tmp);
+		}
+	}
+
 public:
 	//注：for optimization, use immutable-string as return-type
 	std::vector<ks_basic_immutable_string<ELEM>> split(const ks_basic_string_view<ELEM>& sep, size_t n = -1) const {
@@ -416,14 +424,14 @@ public:
 
 public:
 	//注：for optimization, use immutable-string as return-type
-	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to = size_t(-1)) const& { return this->to_immutable().slice(from, to); }
-	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to = size_t(-1))&& { return this->detach_to_immutable().slice(from, to); }
+	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to = size_t(-1)) const& noexcept { return this->to_immutable().slice(from, to); }
+	ks_basic_immutable_string<ELEM> slice(size_t from, size_t to = size_t(-1))&& noexcept { return this->detach_to_immutable().slice(from, to); }
 
 	ks_basic_immutable_string<ELEM> substr(size_t offset, size_t count = size_t(-1)) const& { return this->to_immutable().substr(offset, count); }
 	ks_basic_immutable_string<ELEM> substr(size_t offset, size_t count = size_t(-1))&& { return this->detach_to_immutable().substr(offset, count); }
 
-	ks_basic_immutable_string<ELEM> slice(const_iterator from, const_iterator to) const& { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->to_immutable().slice(from_pos, to_pos); }
-	ks_basic_immutable_string<ELEM> slice(const_iterator from, const_iterator to)&& { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->detach_to_immutable().slice(from_pos, to_pos); }
+	ks_basic_immutable_string<ELEM> slice(const_iterator from, const_iterator to) const& noexcept { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->to_immutable().slice(from_pos, to_pos); }
+	ks_basic_immutable_string<ELEM> slice(const_iterator from, const_iterator to)&& noexcept { size_t from_pos = from - this->cbegin(), to_pos = to - this->cbegin(); return this->detach_to_immutable().slice(from_pos, to_pos); }
 
 	ks_basic_immutable_string<ELEM> substr(const_iterator from, const_iterator to) const& { size_t offset = from - this->cbegin(), count = to - from; return this->to_immutable().substr(offset, count); }
 	ks_basic_immutable_string<ELEM> substr(const_iterator from, const_iterator to)&& { size_t offset = from - this->cbegin(), count = to - from; return this->detach_to_immutable().substr(offset, count); }
@@ -434,17 +442,17 @@ public:
 	ks_basic_immutable_string<ELEM> shrunk() const& { return this->to_immutable().shrunk(); }
 	ks_basic_immutable_string<ELEM> shrunk()&& { return this->detach_to_immutable().shrunk(); }
 
-	const ELEM* c_str() const {
+	const ELEM* c_str() const noexcept {
 		ASSERT(this->do_check_end_ch0());
 		return this->data();
 	}
 
 public:
-	ks_basic_immutable_string<ELEM> to_immutable() const& { return ks_basic_immutable_string<ELEM>(*this); }
-	ks_basic_immutable_string<ELEM> to_immutable()&& { return ks_basic_immutable_string<ELEM>(this->detach()); }
+	ks_basic_immutable_string<ELEM> to_immutable() const& noexcept { return ks_basic_immutable_string<ELEM>(*this); }
+	ks_basic_immutable_string<ELEM> to_immutable()&& noexcept { return ks_basic_immutable_string<ELEM>(this->detach()); }
 
-	ks_basic_mutable_string detach() { return ks_basic_mutable_string(std::move(*this)); }
-	ks_basic_immutable_string<ELEM> detach_to_immutable() { return ks_basic_immutable_string<ELEM>(this->detach()); }
+	ks_basic_mutable_string detach() noexcept { return ks_basic_mutable_string(std::move(*this)); }
+	ks_basic_immutable_string<ELEM> detach_to_immutable() noexcept { return ks_basic_immutable_string<ELEM>(this->detach()); }
 
 public:
 	template <class RIGHT, class _ = std::enable_if_t<std::is_convertible_v<RIGHT, ks_basic_string_view<ELEM>>>>
@@ -478,18 +486,23 @@ inline ks_basic_immutable_string<ELEM> operator+(const LEFT& left, ks_basic_muta
 
 namespace std {
 	template <class ELEM>
+	inline void swap(ks_basic_mutable_string<ELEM>& l, ks_basic_mutable_string<ELEM>& r) noexcept {
+		l.swap(r);
+	}
+
+	template <class ELEM>
 	struct hash<ks_basic_mutable_string<ELEM>> : hash<ks_basic_xmutable_string_base<ELEM>> {
 	};
 }
 
 
 template <class ELEM>
-std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_mutable_string<ELEM>& str) {
+inline std::basic_ostream<ELEM, std::char_traits<ELEM>>& operator<<(std::basic_ostream<ELEM, std::char_traits<ELEM>>& strm, const ks_basic_mutable_string<ELEM>& str) {
 	return strm << str.view();
 }
 
 template <class ELEM>
-std::basic_istream<ELEM, std::char_traits<ELEM>>& operator>>(std::basic_istream<ELEM, std::char_traits<ELEM>>& strm, ks_basic_mutable_string<ELEM>& str) {
+inline std::basic_istream<ELEM, std::char_traits<ELEM>>& operator>>(std::basic_istream<ELEM, std::char_traits<ELEM>>& strm, ks_basic_mutable_string<ELEM>& str) {
 	std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>> std_str;
 	strm >> std_str;
 	str = ks_basic_mutable_string<ELEM>(std::move(std_str));

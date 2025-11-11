@@ -41,7 +41,7 @@ namespace ks_string_util {
 	MODERN_STRING_INLINE_API
 	ks_immutable_wstring join(IT first, IT last, const ks_wstring_view& sep, const ks_wstring_view& prefix, const ks_wstring_view& suffix);
 
-	//concat
+	//concat ...
 	template <class T1, class... Ts, class _ = std::enable_if_t<std::is_convertible_v<T1, ks_string_view>>>
 	MODERN_STRING_INLINE_API
 	ks_immutable_string concat(const T1& s1, const Ts&... sx);

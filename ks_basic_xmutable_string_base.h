@@ -53,12 +53,12 @@ public:
 
 public:
 	//def ctor
-	ks_basic_xmutable_string_base() 
-		: ks_basic_xmutable_string_base(__raw_ctor::v) {
+	ks_basic_xmutable_string_base() noexcept {
+		this->__zero_init();
 	}
 
 	//copy & move ctor
-	ks_basic_xmutable_string_base(const ks_basic_xmutable_string_base& other) {
+	ks_basic_xmutable_string_base(const ks_basic_xmutable_string_base& other) noexcept {
 		if (other.is_sso_mode()) {
 			*_my_sso_ptr() = *other._my_sso_ptr();
 		}
@@ -74,10 +74,10 @@ public:
 			*_my_sso_ptr() = *other._my_sso_ptr();
 		else 
 			*_my_ref_ptr() = *other._my_ref_ptr();
-		::new (&other) ks_basic_xmutable_string_base{};
+		other.__zero_init();
 	}
 
-	ks_basic_xmutable_string_base& operator=(const ks_basic_xmutable_string_base& other) {
+	_NO_INLINE ks_basic_xmutable_string_base& operator=(const ks_basic_xmutable_string_base& other) noexcept {
 		if (this != &other) {
 			if (other.is_sso_mode()) {
 				this->~ks_basic_xmutable_string_base();
@@ -98,32 +98,29 @@ public:
 		return *this;
 	}
 
-	ks_basic_xmutable_string_base& operator=(ks_basic_xmutable_string_base&& other) noexcept {
-		ASSERT(this != &other);
-		this->~ks_basic_xmutable_string_base();
-		if (other.is_sso_mode()) 
-			*_my_sso_ptr() = *other._my_sso_ptr();
-		else 
-			*_my_ref_ptr() = *other._my_ref_ptr();
-		::new (&other) ks_basic_xmutable_string_base(__raw_ctor::v);
+	_NO_INLINE ks_basic_xmutable_string_base& operator=(ks_basic_xmutable_string_base&& other) noexcept {
+		if (this != &other) {
+			this->~ks_basic_xmutable_string_base();
+			if (other.is_sso_mode())
+				*_my_sso_ptr() = *other._my_sso_ptr();
+			else
+				*_my_ref_ptr() = *other._my_ref_ptr();
+			other.__zero_init();
+		}
 		return *this;
 	}
 
 	//dtor
-	~ks_basic_xmutable_string_base() {
+	_NO_INLINE ~ks_basic_xmutable_string_base() noexcept {
 		if (this->is_ref_mode() && !this->_my_ref_ptr()->constantFlag) {
 			ks_basic_string_allocator<ELEM>::_refcountful_release(_my_ref_ptr()->alloc_addr());
 		}
 	}
 
 protected:
-	//raw ctor
-	enum class __raw_ctor { v };
-	explicit ks_basic_xmutable_string_base(__raw_ctor) noexcept {
-		if (sizeof(_SSO_STRUCT) / 8 != 0)
-			std::fill_n((uint64_t*)(_my_sso_ptr()), sizeof(_SSO_STRUCT) / 8, 0);
-		if (sizeof(_SSO_STRUCT) % 8 != 0)
-			std::fill_n((uint8_t*)(_my_sso_ptr()) + sizeof(_SSO_STRUCT) - sizeof(_SSO_STRUCT) % 8, sizeof(_SSO_STRUCT) % 8, 0);
+	//zero ctor
+	inline void __zero_init() noexcept {
+		m_data_union.__mini_zero = 0;
 	}
 
 	//explicit ctor
@@ -135,7 +132,7 @@ protected:
 	explicit ks_basic_xmutable_string_base(std::basic_string<ELEM, std::char_traits<ELEM>, ks_basic_string_allocator<ELEM>>&& str_rvref);
 
 	enum class __constant_mark { v };
-	explicit ks_basic_xmutable_string_base(__constant_mark, const ELEM* sz, size_t length) {
+	_NO_INLINE explicit ks_basic_xmutable_string_base(__constant_mark, const ELEM* sz, size_t length) noexcept {
 		ASSERT(sz != nullptr && length <= _STR_LENGTH_LIMIT && sz[length] == 0);
 		auto* ref_ptr = _my_ref_ptr();
 		ref_ptr->mode = _REF_MODE;
@@ -146,30 +143,30 @@ protected:
 	}
 
 	//detach-void
-	ks_basic_xmutable_string_base do_detach() {
+	ks_basic_xmutable_string_base do_detach() noexcept {
 		ks_basic_xmutable_string_base ret(std::move(*this));
 		this->do_detach_void();
 		return ret;
 	}
 
-	void do_detach_void() {
+	void do_detach_void() noexcept {
 		this->~ks_basic_xmutable_string_base();
-		::new (this) ks_basic_xmutable_string_base{};
+		this->__zero_init();
 	}
 
 public:
-	iterator begin() const { return iterator{ this->data() }; }
-	iterator end() const { return iterator{ this->data_end() }; }
-	const_iterator cbegin() const { return const_iterator{ this->data() }; }
-	const_iterator cend() const { return const_iterator{ this->data_end() }; }
-	reverse_iterator rbegin() const { return reverse_iterator{ this->end() }; }
-	reverse_iterator rend() const { return reverse_iterator{ this->begin() }; }
-	const_reverse_iterator crbegin() const { return reverse_iterator{ this->cend() }; }
-	const_reverse_iterator crend() const { return reverse_iterator{ this->cbegin() }; }
+	iterator begin() const noexcept { return iterator{ this->data() }; }
+	iterator end() const noexcept { return iterator{ this->data_end() }; }
+	const_iterator cbegin() const noexcept { return const_iterator{ this->data() }; }
+	const_iterator cend() const noexcept { return const_iterator{ this->data_end() }; }
+	reverse_iterator rbegin() const noexcept { return reverse_iterator{ this->end() }; }
+	reverse_iterator rend() const noexcept { return reverse_iterator{ this->begin() }; }
+	const_reverse_iterator crbegin() const noexcept { return reverse_iterator{ this->cend() }; }
+	const_reverse_iterator crend() const noexcept { return reverse_iterator{ this->cbegin() }; }
 
 protected:
-	bool do_check_end_ch0() const { return this->data()[this->length()] == 0; }
-	void do_ensure_end_ch0(bool ensure_end_ch0) {
+	bool do_check_end_ch0() const noexcept { return this->data()[this->length()] == 0; }
+	void do_ensure_end_ch0(bool ensure_end_ch0) noexcept {
 		if (ensure_end_ch0 && !this->do_check_end_ch0()) {
 			this->do_ensure_exclusive();
 			this->unsafe_data()[this->length()] = 0;
@@ -231,12 +228,8 @@ protected:
 	void do_assign(const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0);
 	void do_assign(size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0);
 
-	void do_append(const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0) {
-		this->do_insert(this->length(), str_view, ensure_end_ch0);
-	}
-	void do_append(size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0) {
-		this->do_insert(this->length(), count, ch, ch_valid, ensure_end_ch0);
-	}
+	void do_append(const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0);
+	void do_append(size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0);
 
 	void do_insert(size_t pos, const ks_basic_string_view<ELEM>& str_view, bool ensure_end_ch0);
 	void do_insert(size_t pos, size_t count, ELEM ch, bool ch_valid, bool ensure_end_ch0);
@@ -253,9 +246,13 @@ protected:
 	void do_self_add(RIGHT&& right, bool could_ref_right_data_directly, bool ensure_end_ch0);
 
 public:
-	int compare(const ELEM* p) const { return this->view().compare(p); }
-	int compare(const ELEM* p, size_t count) const { return this->view().compare(p, count); }
-	int compare(const ks_basic_string_view<ELEM>& str_view) const { return this->view().compare(str_view); }
+	bool equals(const ELEM* p) const noexcept { return this->view().equals(p); }
+	bool equals(const ELEM* p, size_t count) const noexcept { return this->view().equals(p, count); }
+	bool equals(const ks_basic_string_view<ELEM>& str_view) const noexcept { return this->view().equals(str_view); }
+
+	int compare(const ELEM* p) const noexcept { return this->view().compare(p); }
+	int compare(const ELEM* p, size_t count) const noexcept { return this->view().compare(p, count); }
+	int compare(const ks_basic_string_view<ELEM>& str_view) const noexcept { return this->view().compare(str_view); }
 
 	bool contains(const ELEM* p) const { return this->view().contains(p); }
 	bool contains(const ELEM* p, size_t count) const { return this->view().contains(p, count); }
@@ -303,7 +300,7 @@ public:
 	size_t find_last_not_of(ELEM ch, size_t pos = -1) const { return this->view().find_last_of(ch, pos); }
 
 protected:
-	ks_basic_xmutable_string_base do_slice(size_t from, size_t to) const {
+	_NO_INLINE ks_basic_xmutable_string_base do_slice(size_t from, size_t to) const noexcept {
 		const size_t this_length = this->length();
 		if (from > this_length)
 			from = this_length;
@@ -314,7 +311,7 @@ protected:
 		return this->unsafe_substr(from, to - from);
 	}
 
-	ks_basic_xmutable_string_base do_substr(size_t pos, size_t count) const {
+	_NO_INLINE ks_basic_xmutable_string_base do_substr(size_t pos, size_t count) const {
 		const size_t this_length = this->length();
 		if (pos > this_length)
 			throw std::out_of_range("ks_basic_xmutable_string_base::substr(pos, count) out-of-range exception");
@@ -324,7 +321,7 @@ protected:
 	}
 
 protected:
-	ks_basic_xmutable_string_base unsafe_substr(size_t pos, size_t count) const {
+	ks_basic_xmutable_string_base unsafe_substr(size_t pos, size_t count) const noexcept {
 		ASSERT(this->view().unsafe_subview(pos, count + 1).is_subview_of(this->unsafe_whole_view()));
 		if (count <= _SSO_BUFFER_SPACE - 1 && !(this->is_ref_mode() && this->_my_ref_ptr()->constantFlag)) {
 			return ks_basic_xmutable_string_base(this->view().data() + (ptrdiff_t)pos, count);
@@ -340,7 +337,7 @@ protected:
 		}
 	}
 
-	ks_basic_string_view<ELEM> unsafe_whole_view() const {
+	ks_basic_string_view<ELEM> unsafe_whole_view() const noexcept {
 		if (this->is_sso_mode()) {
 			auto* sso_ptr = _my_sso_ptr();
 			return ks_basic_string_view<ELEM>(sso_ptr->buffer, _SSO_BUFFER_SPACE);
@@ -382,28 +379,28 @@ public:
 	}
 
 public:
-	const ELEM* data() const {
+	const ELEM* data() const noexcept {
 		return this->is_sso_mode()
 			? _my_sso_ptr()->buffer
 			: _my_ref_ptr()->p;
 	}
 
-	const ELEM* data_end() const {
+	const ELEM* data_end() const noexcept {
 		return this->is_sso_mode()
 			? _my_sso_ptr()->buffer + _my_sso_ptr()->length8
 			: _my_ref_ptr()->p + _my_ref_ptr()->length32;
 	}
 
-	size_t length() const {
+	size_t length() const noexcept {
 		return this->is_sso_mode()
 			? _my_sso_ptr()->length8
 			: _my_ref_ptr()->length32;
 	}
 
-	size_t size() const { return this->length(); }
-	bool empty() const { return this->length() == 0; }
+	size_t size() const noexcept { return this->length(); }
+	bool empty() const noexcept { return this->length() == 0; }
 
-	size_t capacity() const {
+	size_t capacity() const noexcept {
 		if (this->is_sso_mode()) 
 			return _SSO_BUFFER_SPACE - 1;
 		else 
@@ -412,7 +409,7 @@ public:
 				: (ks_basic_string_allocator<ELEM>::_get_space32_value(_my_ref_ptr()->alloc_addr()) - 1) - _my_ref_ptr()->offset32;
 	}
 
-	bool is_exclusive() const {
+	bool is_exclusive() const noexcept {
 		if (this->is_sso_mode())
 			return false;
 		else 
@@ -421,17 +418,17 @@ public:
 				: (ks_basic_string_allocator<ELEM>::_peek_refcount32_value(_my_ref_ptr()->alloc_addr(), false) == 1); //note: not need with acquire-order
 	}
 
-	ks_basic_string_view<ELEM> view() const {
+	ks_basic_string_view<ELEM> view() const noexcept {
 		return ks_basic_string_view<ELEM>(this->data(), this->length());
 	}
 
 protected:
-	bool is_sso_mode() const { return _my_mode() == _SSO_MODE; }
-	bool is_ref_mode() const { return _my_mode() == _REF_MODE; }
-	bool is_detached_empty() const { return this->is_sso_mode() && this->empty(); }
+	bool is_sso_mode() const noexcept { return _my_mode() == _SSO_MODE; }
+	bool is_ref_mode() const noexcept { return _my_mode() == _REF_MODE; }
+	bool is_detached_empty() const noexcept { return this->is_sso_mode() && this->empty(); }
 
-	ELEM* unsafe_data() const { return (ELEM*)this->data(); }
-	ELEM* unsafe_data_end() const { return (ELEM*)this->data_end(); }
+	ELEM* unsafe_data() const noexcept { return (ELEM*)this->data(); }
+	ELEM* unsafe_data_end() const noexcept { return (ELEM*)this->data_end(); }
 
 private:
 	static constexpr uint8_t _SSO_MODE = 0;
@@ -446,7 +443,7 @@ private:
 	struct _SSO_STRUCT {
 		uint8_t mode : _MODE_BITS;
 		uint8_t length8; //due to gap exists, length8 need not share same byte with mode, for optimization
-		ELEM buffer[_SSO_BUFFER_SPACE];
+		ELEM    buffer[_SSO_BUFFER_SPACE];
 	};
 	struct _REF_STRUCT {
 		uint32_t mode : _MODE_BITS;
@@ -454,13 +451,14 @@ private:
 		uint32_t length32 : (32 - _MODE_BITS);
 		uint32_t constantFlag : 1;
 		const ELEM* p;
-		ELEM* alloc_addr() const { return const_cast<ELEM*>(this->p) - (size_t)(this->offset32); }
+		ELEM* alloc_addr() const noexcept { return const_cast<ELEM*>(this->p) - (size_t)(this->offset32); }
 	};
 
 	union _DATA_UNION {
-		uint8_t mode : _MODE_BITS;
+		uint8_t     mode : _MODE_BITS;
 		_SSO_STRUCT sso_struct;
 		_REF_STRUCT ref_struct;
+		uint32_t    __mini_zero;
 	};
 
 	static_assert(sizeof(_SSO_STRUCT) <= _FIX_DATA_SIZE, "the size of SSO_STRUCT is not perfect");
@@ -470,34 +468,34 @@ private:
 	_DATA_UNION m_data_union;
 
 private:
-	constexpr uint8_t _my_mode() const { return m_data_union.mode; }
-	constexpr _SSO_STRUCT* _my_sso_ptr() { return &m_data_union.sso_struct; }
-	constexpr _REF_STRUCT* _my_ref_ptr() { return &m_data_union.ref_struct; }
-	constexpr const _SSO_STRUCT* _my_sso_ptr() const { return &m_data_union.sso_struct; }
-	constexpr const _REF_STRUCT* _my_ref_ptr() const { return &m_data_union.ref_struct; }
+	constexpr uint8_t _my_mode() const noexcept { return m_data_union.mode; }
+	constexpr _SSO_STRUCT* _my_sso_ptr() noexcept { return &m_data_union.sso_struct; }
+	constexpr _REF_STRUCT* _my_ref_ptr() noexcept { return &m_data_union.ref_struct; }
+	constexpr const _SSO_STRUCT* _my_sso_ptr() const noexcept { return &m_data_union.sso_struct; }
+	constexpr const _REF_STRUCT* _my_ref_ptr() const noexcept { return &m_data_union.ref_struct; }
 
 public:
-	bool operator==(const ks_basic_string_view<ELEM>& right) const { return this->view() == right; }
-	bool operator!=(const ks_basic_string_view<ELEM>& right) const { return this->view() != right; }
-	bool operator<(const ks_basic_string_view<ELEM>& right) const { return this->view() < right; }
-	bool operator<=(const ks_basic_string_view<ELEM>& right) const { return this->view() <= right; }
-	bool operator>(const ks_basic_string_view<ELEM>& right) const { return this->view() > right; }
-	bool operator>=(const ks_basic_string_view<ELEM>& right) const { return this->view() >= right; }
+	bool operator==(const ks_basic_string_view<ELEM>& right) const noexcept { return this->view() == right; }
+	bool operator!=(const ks_basic_string_view<ELEM>& right) const noexcept { return this->view() != right; }
+	bool operator<(const ks_basic_string_view<ELEM>& right) const noexcept { return this->view() < right; }
+	bool operator<=(const ks_basic_string_view<ELEM>& right) const noexcept { return this->view() <= right; }
+	bool operator>(const ks_basic_string_view<ELEM>& right) const noexcept { return this->view() > right; }
+	bool operator>=(const ks_basic_string_view<ELEM>& right) const noexcept { return this->view() >= right; }
 
 protected: 
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p) { return ks_basic_string_view<ELEM>::__to_basic_string_view(p); }
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(p, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(p); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ELEM* p, size_t count) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(p, count); }
 
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str_view); }
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view, size_t offset, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str_view, offset, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(str_view); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_string_view<ELEM>& str_view, size_t offset, size_t count) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(str_view, offset, count); }
 
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const ks_basic_xmutable_string_base<ELEM>& str, size_t offset, size_t count) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
 
 	template <class CharTraits, class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(str); }
 	template <class CharTraits, class AllocType>
-	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str, size_t offset, size_t count) { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
+	static constexpr inline ks_basic_string_view<ELEM> __to_basic_string_view(const std::basic_string<ELEM, CharTraits, AllocType>& str, size_t offset, size_t count) noexcept { return ks_basic_string_view<ELEM>::__to_basic_string_view(str, offset, count); }
 
 	friend class ks_basic_mutable_string<ELEM>;
 	friend class ks_basic_immutable_string<ELEM>;
